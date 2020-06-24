@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>SIP API CSV Exporter</title>
+	<meta charset="UTF-8" />
+	<link rel="stylesheet" type="text/css" href="styles.css">
+	<link href="https://fonts.googleapis.com/css2?family=Jost&display=swap" rel="stylesheet">
+</head>
+
+<body>
+	<h1>SIP API CSV Exporter</h1>
+	<div id="app">
+		<label for="shelfMarkInput">Shelfmarks:</label>
+		<textarea rows="5" id=shelfMarkInput placeholder="Paste a Comma, or Space separated list of Shelfmarks here..."></textarea>
+		<label for="qubitParentSlug">Qubit Parent Slug:</label>
+		<input type=text class=prompts id=qubitParentSlug>
+		<label for="qubitParentSlug">Indentifier Prefix:</label>
+		<input type=text class=prompts id=identifierPrefix>
+		<label for="qubitParentSlug">Institution Name:</label>
+		<input type=text class=prompts id=repository>
+		<label for="qubitParentSlug">Network Location of Digital Files:</label>
+		<input type=text class=prompts id=digitalObjectURI>
+		<input type="button" value="Submit" id="Submit"><br>
+    </div>
+    <script src="index.js"></script>
+</body>
+
+</html>
