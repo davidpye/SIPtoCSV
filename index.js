@@ -133,7 +133,7 @@ async function fetchSingle(shelfmark) {
   const csvData = {
     legacyId: "",
     parentId: "",
-    qubitParentSlug: parentSlug !== "" ? parentSlug : SIPjson.SamiTitle.toString().replace(',', '-').replace(/\s+/g, `-`).toLowerCase(),
+    qubitParentSlug: parentSlug !== "" ? parentSlug : SIPjson.SamiTitle.toString().replace(/[,. \s+]/g, `-`).toLowerCase(),
     identifier: identifierPrefix !== "" ? identifierPrefix + "/" + SIPjson.SamiCallNumber : SIPjson.SamiCallNumber,
     accessionNumber: "",
     title: SIPjson.SamiTitle,
