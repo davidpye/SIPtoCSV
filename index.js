@@ -42,7 +42,7 @@ async function fetchAll(shelfmarks) {
   const element = document.createElement("a");
   const file = new Blob([csvOutput], { type: "text/plain" });
   element.href = URL.createObjectURL(file);
-  element.download = "myFile.csv";
+  element.download = new Date().toISOString() + ".csv";
   document.body.appendChild(element);
   element.click();
 }
