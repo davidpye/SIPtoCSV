@@ -63,199 +63,67 @@ async function fetchSingle(shelfmark) {
   });
   const processXMLBody = ProcessMDXML["mets:mets"];
   const processXMLRights =
-    processXMLBody["mets:amdSec"][0]["mets:rightsMD"]["mets:mdWrap"][
-      "mets:xmlData"
-    ]["odrl:policy"];
+    processXMLBody["mets:amdSec"][0]["mets:rightsMD"]["mets:mdWrap"]["mets:xmlData"]["odrl:policy"];
   const LogicalMD = JSON.parse(SIPjson.LogicalStructure);
   const PhysicalMD = JSON.parse(SIPjson.PhysicalStructure);
-  const recordingsData = LogicalMD[0].children
-    .map(function (child) {
-      let recordingName = child.text;
-      let fileInfo = child.files
-        .map(function (file) {
-          let fileName = file.text;
-          let fileStart =
-            file.ranges[0].startH +
-            ":" +
-            file.ranges[0].startM +
-            ":" +
-            file.ranges[0].startS +
-            ":" +
-            file.ranges[0].startF;
-          let fileEnd =
-            file.ranges[0].endH +
-            ":" +
-            file.ranges[0].endM +
-            ":" +
-            file.ranges[0].endS +
-            ":" +
-            file.ranges[0].endF;
-          return fileName + `\nStart: ` + fileStart + `\nEnd: ` + fileEnd;
-        })
-        .join(`\n`);
-      return recordingName + `\n` + fileInfo;
-    })
-    .join(`\n`);
+  const recordingsData = LogicalMD[0].children.map(function (child) {
+    let recordingName = child.text;
+    let fileInfo = child.files.map(function (file) {
+      let fileName = file.text;
+      let fileStart = file.ranges[0].startH + ":" + file.ranges[0].startM + ":" + file.ranges[0].startS + ":" + file.ranges[0].startF;
+      let fileEnd = file.ranges[0].endH + ":" + file.ranges[0].endM + ":" + file.ranges[0].endS + ":" + file.ranges[0].endF;
+        return fileName + '\nStart: ' + fileStart + '\nEnd: ' + fileEnd;
+    }).join('\n');
+    return recordingName + '\n' + fileInfo;
+  }).join('\n\n');
   const techMDs = processXMLBody["mets:amdSec"].filter(function (element) {
     return Object.keys(element).some(function (key) {
       return key === "mets:techMD";
     });
   });
-  const transferData = techMDs
-    .map(function (transferFile) {
-      let transferFilename =
-        transferFile["mets:techMD"][0]["mets:mdWrap"]["mets:xmlData"][
-          "mediaMD:mediaMD"
-        ]["mediaMD:fileData"]["mediaMD:fileName"]._text;
-      let transferFormat =
-        transferFile["mets:techMD"][0]["mets:mdWrap"]["mets:xmlData"][
-          "mediaMD:mediaMD"
-        ]["mediaMD:fileData"]["mediaMD:format"]._text;
-      let transferBitdepth =
-        transferFile["mets:techMD"][0]["mets:mdWrap"]["mets:xmlData"][
-          "mediaMD:mediaMD"
-        ]["mediaMD:streamData"]["mediaMD:bitDepth"]._text;
-      let transferSamplerate =
-        transferFile["mets:techMD"][0]["mets:mdWrap"]["mets:xmlData"][
-          "mediaMD:mediaMD"
-        ]["mediaMD:streamData"]["mediaMD:samplingRate"]._text;
-      let transferChannels =
-        transferFile["mets:techMD"][0]["mets:mdWrap"]["mets:xmlData"][
-          "mediaMD:mediaMD"
-        ]["mediaMD:streamData"]["mediaMD:channels"]._text;
-      let transferProcesses = transferFile["mets:techMD"][1]["mets:mdWrap"][
-        "mets:xmlData"
-      ]["blaph:processHistory"]["blaph:processEvent"]
-        .map(function (processEvent) {
+  const transferData = techMDs.map(function (transferFile) {
+      let transferFilename = transferFile["mets:techMD"][0]["mets:mdWrap"]["mets:xmlData"]["mediaMD:mediaMD"]["mediaMD:fileData"]["mediaMD:fileName"]._text;
+      let transferFormat = transferFile["mets:techMD"][0]["mets:mdWrap"]["mets:xmlData"]["mediaMD:mediaMD"]["mediaMD:fileData"]["mediaMD:format"]._text;
+      let transferBitdepth = transferFile["mets:techMD"][0]["mets:mdWrap"]["mets:xmlData"]["mediaMD:mediaMD"]["mediaMD:streamData"]["mediaMD:bitDepth"]._text;
+      let transferSamplerate = transferFile["mets:techMD"][0]["mets:mdWrap"]["mets:xmlData"]["mediaMD:mediaMD"]["mediaMD:streamData"]["mediaMD:samplingRate"]._text;
+      let transferChannels = transferFile["mets:techMD"][0]["mets:mdWrap"]["mets:xmlData"]["mediaMD:mediaMD"]["mediaMD:streamData"]["mediaMD:channels"]._text;
+      let transferProcesses = transferFile["mets:techMD"][1]["mets:mdWrap"]["mets:xmlData"]["blaph:processHistory"]["blaph:processEvent"].map(function (processEvent) {
           let processDescription = processEvent._attributes.processDescription;
-          let processDevices =
-            processEvent["blaph:deviceChain"]["blaph:device"];
-          let processDevicesArray = processDevices.length
-            ? processDevices
-            : [processDevices];
-          let devices = processDevicesArray
-            .map(function (processDevice) {
+          let processDevices = processEvent["blaph:deviceChain"]["blaph:device"];
+          let processDevicesArray = processDevices.length ? processDevices : [processDevices];
+          let devices = processDevicesArray.map(function (processDevice) {
               let deviceRole = processDevice._attributes.functionalRole;
               let deviceMan = processDevice._attributes.manufacturer;
               let deviceModel = processDevice._attributes.modelName;
-              let deviceSerial =
-                processDevice._attributes.serialNumber !== undefined
-                  ? processDevice._attributes.serialNumber
-                  : "N/A";
+              let deviceSerial = processDevice._attributes.serialNumber !== undefined ? processDevice._attributes.serialNumber : "N/A";
               let deviceParameters = processDevice["blaph:settings"];
-              let deviceParameterArray = deviceParameters.length
-                ? deviceParameters
-                : [deviceParameters];
-              let parameters = deviceParameterArray
-                .map(function (deviceParameter) {
-                  let tempParameter =
-                    deviceParameter["blaph:temperature"] &&
-                    deviceParameter["blaph:temperature"]._attributes !==
-                      undefined
-                      ? "Temperature: " +
-                        deviceParameter["blaph:temperature"]._text +
-                        ` Degrees ` +
-                        deviceParameter["blaph:temperature"]._attributes.units
-                      : "";
-                  let timeParameter =
-                    deviceParameter["blaph:time"] &&
-                    deviceParameter["blaph:time"]._attributes !== undefined
-                      ? ", Time: " +
-                        deviceParameter["blaph:time"]._text +
-                        ` ` +
-                        deviceParameter["blaph:time"]._attributes.units
-                      : "";
-                  let eqParameter =
-                    deviceParameter["blaph:equalisation"] &&
-                    deviceParameter[`blaph:equalisation`]._attributes
-                      .standard !== undefined
-                      ? `Replay EQ: ` +
-                        deviceParameter[`blaph:equalisation`]._attributes
-                          .standard
-                      : ``;
-                  let speedParameter =
-                    deviceParameter["blaph:replaySpeed"] &&
-                    deviceParameter["blaph:replaySpeed"]._text !== undefined
-                      ? `, Replay Speed: ` +
-                        deviceParameter["blaph:replaySpeed"]._text +
-                        `cm/s`
-                      : ``;
-                  let nrParameter =
-                    deviceParameter["blaph:noiseReduction"] &&
-                    deviceParameter["blaph:noiseReduction"]._attributes.type !==
-                      undefined
-                      ? `, Noise Reduction: ` +
-                        deviceParameter["blaph:noiseReduction"]._attributes.type
-                      : ``;
-                  let deviceNotes =
-                    deviceParameter[`blaph:settingsNote`] &&
-                    deviceParameter[`blaph:settingsNote`]._text !== undefined
-                      ? `\nNote: ` + deviceParameter[`blaph:settingsNote`]._text
-                      : ``;
-                  return (
-                    (deviceRole == "Heater"
-                      ? tempParameter + timeParameter
-                      : ``) +
-                    (deviceRole == `Reproducer`
-                      ? eqParameter + speedParameter + nrParameter
-                      : ``) +
-                    (deviceNotes !== `` ? deviceNotes : ``)
+              let deviceParameterArray = deviceParameters.length ? deviceParameters : [deviceParameters];
+              let parameters = deviceParameterArray.map(function (deviceParameter) {
+                  let tempParameter = deviceParameter["blaph:temperature"] && deviceParameter["blaph:temperature"]._attributes !== undefined ? "Temperature: " + deviceParameter["blaph:temperature"]._text + ` Degrees ` + deviceParameter["blaph:temperature"]._attributes.units   : "";
+                  let timeParameter = deviceParameter["blaph:time"] && deviceParameter["blaph:time"]._attributes !== undefined ? ", Time: " + deviceParameter["blaph:time"]._text + ` ` + deviceParameter["blaph:time"]._attributes.units : "";
+                  let eqParameter = deviceParameter["blaph:equalisation"] && deviceParameter[`blaph:equalisation`]._attributes.standard !== undefined ? `Replay EQ: ` + deviceParameter[`blaph:equalisation`]._attributes.standard : ``;
+                  let speedParameter = deviceParameter["blaph:replaySpeed"] && deviceParameter["blaph:replaySpeed"]._text !== undefined ? `, Replay Speed: ` + deviceParameter["blaph:replaySpeed"]._text + `cm/s` : ``;
+                  let nrParameter = deviceParameter["blaph:noiseReduction"] && deviceParameter["blaph:noiseReduction"]._attributes.type !== undefined ? `, Noise Reduction: ` + deviceParameter["blaph:noiseReduction"]._attributes.type : ``;
+                  let deviceNotes = deviceParameter[`blaph:settingsNote`] && deviceParameter[`blaph:settingsNote`]._text !== undefined ? `\nNote: ` + deviceParameter[`blaph:settingsNote`]._text : ``;
+                  return ((deviceRole == `Heater` ? tempParameter + timeParameter : ``) + (deviceRole == `Reproducer` ? eqParameter + speedParameter + nrParameter : ``) + (deviceNotes !== `` ? deviceNotes : ``)
                   );
-                })
-                .join(`\n`);
+                }).join();
               let inputs = [];
-              if (processDevice["blaph:connections"] === undefined) {
-                inputs = [];
-              } else if (
-                processDevice["blaph:connections"]["blaph:input"] !== undefined
-              ) {
-                inputs = processDevice["blaph:connections"]["blaph:input"]
-                  .map(function (input) {
-                    let inputFormat = input._attributes.signalFormat;
-                    let inputInterface = input._attributes.interfaceType;
-                    let inputChannel = input._attributes.channel;
-                    return (
-                      inputFormat + ` ` + inputInterface + ` - ` + inputChannel
-                    );
-                  })
-                  .join(`\n`);
-              }
-              return (
-                deviceRole +
-                `: ` +
-                deviceMan +
-                ` ` +
-                deviceModel +
-                `, S/N: ` +
-                deviceSerial +
-                (parameters !== ""
-                  ? `\nDevice Parameters: ` + parameters
-                  : ``) +
-                (inputs !== "" ? `\n` + inputs : ``)
-              );
-            })
-            .join(`\n`);
-          return processDescription + `\n` + devices;
-        })
-        .join(`\n`);
-      return (
-        transferFilename +
-        `\n` +
-        `Format: ` +
-        transferFormat +
-        ` ` +
-        transferBitdepth +
-        `Bit ` +
-        transferSamplerate +
-        `Hz ` +
-        (transferChannels > 1
-          ? transferChannels + ` Channel` + `s`
-          : transferChannels + ` Channel`) +
-        `\n` +
-        transferProcesses
-      );
-    })
-    .join(`\n`);
+              if (processDevice["blaph:connections"] === undefined) {inputs = [];} 
+              else if (processDevice["blaph:connections"]["blaph:input"] !== undefined) {
+                inputs = processDevice["blaph:connections"]["blaph:input"].map(function (input) {
+                  let inputFormat = input._attributes.signalFormat;
+                  let inputInterface = input._attributes.interfaceType;
+                  let inputChannel = input._attributes.channel;
+                  return (inputFormat + ` ` + inputInterface + ` - ` + inputChannel);
+                }).join();
+              } 
+              return (deviceRole + `: ` + deviceMan + ` ` + deviceModel + `, S/N: ` + deviceSerial + (parameters !== "" ? `\nDevice Parameters: ` + parameters : ``) + (inputs !== "" ? `\n` + inputs : ``));
+            }).join('\n');
+          return processDescription + `:\n` + devices;
+        }).join(`\n`);
+      return (transferFilename + `\n` + `Format: ` + transferFormat + ` ` + transferBitdepth + `Bit ` + transferSamplerate + `Hz ` + (transferChannels > 1 ? transferChannels + ` Channel` + `s` : transferChannels + ` Channel`) + `\n` + transferProcesses);
+    }).join(`\n`);
   const createdFilePaths = SIPjson.Files.map(function (file) {
     let fileName = file.Name;
     let filePath = digitalFilesPath + fileName;
@@ -264,46 +132,31 @@ async function fetchSingle(shelfmark) {
   const csvData = {
     legacyId: "",
     parentId: "",
-    qubitParentSlug:
-      parentSlug !== ""
-        ? parentSlug
-        : SIPjson.SamiTitle.toString().replace(/\s+/g, `-`).toLowerCase(),
-    identifier:
-      identifierPrefix !== ""
-        ? identifierPrefix + "/" + SIPjson.SamiCallNumber
-        : SIPjson.SamiCallNumber,
+    qubitParentSlug: parentSlug !== "" ? parentSlug : SIPjson.SamiTitle.toString().replace(/\s+/g, `-`).toLowerCase(),
+    identifier: identifierPrefix !== "" ? identifierPrefix + "/" + SIPjson.SamiCallNumber : SIPjson.SamiCallNumber,
     accessionNumber: "",
     title: SIPjson.SamiTitle,
     levelOfDescription: "Product",
-    extentAndMedium:
-      LogicalMD[0].children[0].files.length +
-      ` Wave format Audio File` +
-      (LogicalMD[0].children[0].files.length > 1 ? `s` : ``),
+    extentAndMedium: LogicalMD[0].children[0].files.length + ` Wave format Audio File` + (LogicalMD[0].children[0].files.length > 1 ? `s` : ``),
     repository: institutionName,
     archivalHistory: "",
     acquisition: "",
-    scopeAndContent: '""' + recordingsData + '""',
+    scopeAndContent: '"' + recordingsData + '"',
     appraisal: "",
     accruals: "",
     arrangement: "",
     accessConditions: "",
-    reproductionConditions:
-      `Rights Attribution: ` +
-      processXMLRights["dc:rights"]._text +
-      `\nRights Contributor: ` +
-      processXMLRights["dc:contributor"]._text +
-      `\nRights Provenance: ` +
-      processXMLRights["dc:provenance"]._text,
+    reproductionConditions:'"' + `Rights Attribution: ` + processXMLRights["dc:rights"]._text + `\nRights Contributor: ` + processXMLRights["dc:contributor"]._text + `\nRights Provenance: ` + processXMLRights["dc:provenance"]._text + '"',
     language: "",
     script: "",
     languageNote: "",
-    physicalCharacteristics: transferData,
+    physicalCharacteristics: '"' + transferData + '"',
     findingAids: "",
     locationOfOriginals: "",
     locationOfCopies: "The British Library",
     relatedUnitsOfDescription: "",
     publicationNote: "",
-    digitalObjectURI: createdFilePaths,
+    digitalObjectURI: '"' + createdFilePaths + '"',
     generalNote: "",
     subjectAccessPoints: "",
     placeAccessPoints: "",
