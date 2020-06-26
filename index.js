@@ -72,10 +72,10 @@ async function fetchSingle(shelfmark) {
       let fileName = file.text;
       let fileStart = file.ranges[0].startH + ":" + file.ranges[0].startM + ":" + file.ranges[0].startS + ":" + file.ranges[0].startF;
       let fileEnd = file.ranges[0].endH + ":" + file.ranges[0].endM + ":" + file.ranges[0].endS + ":" + file.ranges[0].endF;
-        return fileName + '\nStart: ' + fileStart + '\nEnd: ' + fileEnd;
-    }).join('\n');
-    return recordingName + '\n' + fileInfo;
-  }).join('\n\n');
+        return fileName + '\u2028Start: ' + fileStart + '\u2028End: ' + fileEnd;
+    }).join('\u2028');
+    return recordingName + '\u2028' + fileInfo;
+  }).join('\u2028\u2028');
   const techMDs = processXMLBody["mets:amdSec"].filter(function (element) {
     return Object.keys(element).some(function (key) {
       return key === "mets:techMD";
