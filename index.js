@@ -116,8 +116,8 @@ async function fetchSingle(shelfmark) {
                   let inputFormat = input._attributes.signalFormat;
                   let inputInterface = input._attributes.interfaceType;
                   let inputChannel = input._attributes.channel;
-                  return (inputFormat + ` ` + inputInterface + ` - ` + inputChannel +' ');
-                }).join();
+                  return (inputFormat + ` ` + inputInterface + ` - ` + inputChannel);
+                }).join(` `);
               } 
               return (deviceRole + `: ` + deviceMan + ` ` + deviceModel + (deviceSerial !== `` ? `, S/N: ` + deviceSerial : ``) + (parameters !== `` ? `\nDevice Parameters: ` + parameters : ``) + (inputs !== "" ? `\n` + inputs : ``));
             }).join('\n');
