@@ -16,7 +16,7 @@ function parseInputs() {
     .replace(/[/]/g, "!2F")
     .replace(/[,]/g, "")
     .replace(/\r/g, "")
-    .split(/\s+/);
+    .split(/\s+/g);
   parentSlug = document.getElementById("qubitParentSlug").value;
   identifierPrefix = document.getElementById("identifierPrefix").value;
   institutionName = document.getElementById("repository").value;
