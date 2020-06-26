@@ -15,7 +15,7 @@ function parseInputs() {
   let inputShelfmarks = shelfmarksString
     .replace(/[/]/g, "!2F")
     .replace(/[,]/g, "")
-    .split(/\r|\n/|' ');
+    .split(/\r|\n/);
   parentSlug = document.getElementById("qubitParentSlug").value;
   identifierPrefix = document.getElementById("identifierPrefix").value;
   institutionName = document.getElementById("repository").value;
