@@ -100,12 +100,12 @@ async function fetchSingle(shelfmark) {
               let deviceParameters = processDevice["blaph:settings"];
               let deviceParameterArray = deviceParameters.length ? deviceParameters : [deviceParameters];
               let parameters = deviceParameterArray.map(function (deviceParameter) {
-                  let tempParameter = deviceParameter["blaph:temperature"] && deviceParameter["blaph:temperature"]._attributes !== undefined ? "Temperature: " + deviceParameter["blaph:temperature"]._text + ` Degrees ` + deviceParameter["blaph:temperature"]._attributes.units   : "";
-                  let timeParameter = deviceParameter["blaph:time"] && deviceParameter["blaph:time"]._attributes !== undefined ? ", Time: " + deviceParameter["blaph:time"]._text + ` ` + deviceParameter["blaph:time"]._attributes.units : "";
+                  let tempParameter = deviceParameter["blaph:temperature"] && deviceParameter["blaph:temperature"]._attributes !== undefined ? `Temperature: ` + deviceParameter["blaph:temperature"]._text + ` Degrees ` + deviceParameter["blaph:temperature"]._attributes.units   : ``;
+                  let timeParameter = deviceParameter["blaph:time"] && deviceParameter["blaph:time"]._attributes !== undefined ? ", Time: " + deviceParameter["blaph:time"]._text + ` ` + deviceParameter["blaph:time"]._attributes.units : ``;
                   let eqParameter = deviceParameter["blaph:equalisation"] && deviceParameter[`blaph:equalisation`]._attributes.standard !== undefined ? `Replay EQ: ` + deviceParameter[`blaph:equalisation`]._attributes.standard : ``;
                   let speedParameter = deviceParameter["blaph:replaySpeed"] && deviceParameter["blaph:replaySpeed"]._text !== undefined ? `, Replay Speed: ` + deviceParameter["blaph:replaySpeed"]._text + `cm/s` : ``;
                   let nrParameter = deviceParameter["blaph:noiseReduction"] && deviceParameter["blaph:noiseReduction"]._attributes.type !== undefined ? `, Noise Reduction: ` + deviceParameter["blaph:noiseReduction"]._attributes.type : ``;
-                  let deviceNotes = deviceParameter[`blaph:settingsNote`] && deviceParameter[`blaph:settingsNote`]._text !== undefined ? `\nNote: ` + deviceParameter[`blaph:settingsNote`]._text : ``;
+                  let deviceNotes = deviceParameter["blaph:settingsNote"] && deviceParameter["blaph:settingsNote"]._text !== undefined ? `\nNote: ` + deviceParameter[`blaph:settingsNote`]._text : ``;
                   return ((deviceRole == `Heater` ? tempParameter + timeParameter : ``) + (deviceRole == `Reproducer` ? eqParameter + speedParameter + nrParameter : ``) + (deviceNotes !== `` ? deviceNotes : ``)
                   );
                 }).join();
@@ -117,7 +117,7 @@ async function fetchSingle(shelfmark) {
                   let inputInterface = input._attributes.interfaceType;
                   let inputChannel = input._attributes.channel;
                   return (inputFormat + ` ` + inputInterface + ` - ` + inputChannel);
-                }).join(` `);
+                }).join(`, `);
               } 
               return (deviceRole + `: ` + deviceMan + ` ` + deviceModel + (deviceSerial !== `` ? `, S/N: ` + deviceSerial : ``) + (parameters !== `` ? `\nDevice Parameters: ` + parameters : ``) + (inputs !== "" ? `\n` + inputs : ``));
             }).join('\n');
