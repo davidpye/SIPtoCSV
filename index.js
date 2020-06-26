@@ -136,7 +136,7 @@ async function fetchSingle(shelfmark) {
     qubitParentSlug: parentSlug !== "" ? parentSlug : SIPjson.SamiTitle.toString().replace(/[,. \s+]/g, `-`).toLowerCase(),
     identifier: identifierPrefix !== "" ? identifierPrefix + "/" + SIPjson.SamiCallNumber : SIPjson.SamiCallNumber,
     accessionNumber: "",
-    title: SIPjson.SamiTitle,
+    title:  '"' + SIPjson.SamiTitle + '"',
     levelOfDescription: "Product",
     extentAndMedium: LogicalMD[0].children[0].files.length + ` Wave format Audio File` + (LogicalMD[0].children[0].files.length > 1 ? `s` : ``),
     repository: institutionName,
