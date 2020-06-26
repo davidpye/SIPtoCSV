@@ -119,7 +119,7 @@ async function fetchSingle(shelfmark) {
                   return (inputFormat + ` ` + inputInterface + ` - ` + inputChannel +' ');
                 }).join();
               } 
-              return (deviceRole + `: ` + deviceMan + ` ` + deviceModel + `, S/N: ` + deviceSerial + (parameters !== "" ? `\nDevice Parameters: ` + parameters : ``) + (inputs !== "" ? `\n` + inputs : ``));
+              return (deviceRole + `: ` + deviceMan + ` ` + deviceModel + (deviceSerial !== `` ? `, S/N: ` + deviceSerial : ``) + (parameters !== `` ? `\nDevice Parameters: ` + parameters : ``) + (inputs !== "" ? `\n` + inputs : ``));
             }).join('\n');
           return processDescription + `:\n` + devices;
         }).join(`\n`);
