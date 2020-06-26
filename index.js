@@ -72,10 +72,10 @@ async function fetchSingle(shelfmark) {
       let fileName = file.text;
       let fileStart = file.ranges[0].startH + ":" + file.ranges[0].startM + ":" + file.ranges[0].startS + ":" + file.ranges[0].startF;
       let fileEnd = file.ranges[0].endH + ":" + file.ranges[0].endM + ":" + file.ranges[0].endS + ":" + file.ranges[0].endF;
-        return fileName + '\u2028Start: ' + fileStart + '\u2028End: ' + fileEnd;
-    }).join('\u2028');
-    return recordingName + '\u2028' + fileInfo;
-  }).join('\u2028\u2028');
+        return fileName + '\nStart: ' + fileStart + '\nEnd: ' + fileEnd;
+    }).join('\n');
+    return recordingName + '\n' + fileInfo;
+  }).join('\n\n');
   const techMDs = processXMLBody["mets:amdSec"].filter(function (element) {
     return Object.keys(element).some(function (key) {
       return key === "mets:techMD";
@@ -115,7 +115,7 @@ async function fetchSingle(shelfmark) {
                   let inputFormat = input._attributes.signalFormat;
                   let inputInterface = input._attributes.interfaceType;
                   let inputChannel = input._attributes.channel;
-                  return (inputFormat + ` ` + inputInterface + ` - ` + inputChannel);
+                  return (inputFormat + ` ` + inputInterface + ` - ` + inputChannel +' ');
                 }).join();
               } 
               return (deviceRole + `: ` + deviceMan + ` ` + deviceModel + `, S/N: ` + deviceSerial + (parameters !== "" ? `\nDevice Parameters: ` + parameters : ``) + (inputs !== "" ? `\n` + inputs : ``));
