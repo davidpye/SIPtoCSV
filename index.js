@@ -255,7 +255,7 @@ async function fetchSingle(shelfmark) {
         transferProcesses
       );
     })
-    .join(`\n\n`);
+    .join(`\n`);
   const createdFilePaths = SIPjson.Files.map(function (file) {
     let fileName = file.Name;
     let filePath = digitalFilesPath + fileName;
