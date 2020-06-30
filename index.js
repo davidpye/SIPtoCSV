@@ -1,7 +1,3 @@
-//Prompt user to input Shelfmarks, replace / with !2F, add comma to end of each
-//string.split(', ') split by comma or new line
-//array.join(', ') add comma at the end of each shelfmark
-
 import convert from "xml-js";
 
 document.getElementById("Submit").addEventListener("click", parseInputs);
@@ -12,34 +8,34 @@ let digitalFilesPath = "";
 
 function parseInputs() {
   let shelfmarksString = document.getElementById("shelfMarkInput").value;
-  let inputShelfmarks = shelfmarksString
-    .replace(/[/]/g, "!2F")
-    .replace(/[,]/g, "")
-    .replace(/\r/g, "")
-    .split(/\s+/g);
+  let inputShelfmarks = shelfmarksString.replace(/[/]/g, "!2F").replace(/[,]/g, "").replace(/\r/g, "").split(/\s+/g);
   parentSlug = document.getElementById("qubitParentSlug").value;
   identifierPrefix = document.getElementById("identifierPrefix").value;
   institutionName = document.getElementById("repository").value;
   digitalFilesPath = document.getElementById("digitalObjectURI").value;
-  fetchAll(
-    inputShelfmarks,
-    parentSlug,
-    identifierPrefix,
-    institutionName,
-    digitalFilesPath
-  );
+  fetchAll(inputShelfmarks, parentSlug, identifierPrefix, institutionName, digitalFilesPath);
 }
 
+// async function f() {
+//   try {
+//     let response = await fetch('http://no-such-url');
+//   } catch(err) {
+//     alert(err); // TypeError: failed to fetch
+//   }
+// } https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/allSettled
+
 async function fetchAll(shelfmarks) {
-  const fetchArray = await Promise.all(
-    shelfmarks.map((element) => fetchSingle(element + ","))
-  );
-  const csvKeys = Object.keys(fetchArray[0]).join(", "); //CSV Header
-  const csvValues = fetchArray.map(function (data) {
-    return Object.values(data).join(", ");
-  }); //CSV Row
+  const fetchArray = await Promise.allSettled(shelfmarks.map((element) => fetchSingle(element + ",")));
+  const fulfilledArray = fetchArray.filter((item) => item.status === 'fulfilled');
+  const rejectedArray = fetchArray.filter((item) => item.status === 'rejected');
+  const fetchArrayValues = fulfilledArray.map(x => x.value);
+  const csvKeys = Object.keys(fetchArrayValues[0]).join(", "); //CSV Header
+  const csvValues = fetchArrayValues.map(function (data) {return Object.values(data).join(", ");}); //CSV Row
   const csvOutput = [csvKeys, ...csvValues].join("\n");
-  console.log(csvOutput);
+  console.log(rejectedArray);
+  if (rejectedArray.length !== 0){
+    alert(`WARNING: `+ rejectedArray.length + ((rejectedArray.length > 1) ? ` shelfmarks` : ` shelfmark`) + ` produced errors and` + ((rejectedArray.length > 1) ? ` weren't` : ` wasn't`) + ` accessible.`);
+  }
   const element = document.createElement("a");
   const file = new Blob([csvOutput], { type: "text/plain" });
   element.href = URL.createObjectURL(file);
@@ -49,22 +45,15 @@ async function fetchAll(shelfmarks) {
 }
 
 async function fetchSingle(shelfmark) {
-  const summaryResponse = await fetch(
-    `https://avsip.ad.bl.uk/api/SearchSIPs/null/false/false/` + shelfmark
-  ); //Search for Shelfmark to acquire relevant SIP ID No.
-  console.log(summaryResponse);
+  const summaryResponse = await fetch(`https://avsip.ad.bl.uk/api/SearchSIPs/null/false/false/` + shelfmark); //Search for Shelfmark to acquire relevant SIP ID No.
   const summaryjson = await summaryResponse.json();
   const id = summaryjson[0].Id;
   const SIPResponse = await fetch(`https://avsip.ad.bl.uk/api/SIP/` + id); //Pull SIP JSON Data & Parse unformatted JSON
   const SIPjson = await SIPResponse.json();
   const ProcessMD = JSON.parse(SIPjson.ProcessMetadata);
-  const ProcessMDXML = convert.xml2js(SIPjson.Submissions[0].METS, {
-    compact: true,
-    spaces: 2,
-  });
+  const ProcessMDXML = convert.xml2js(SIPjson.Submissions[0].METS, {compact: true, spaces: 2});
   const processXMLBody = ProcessMDXML["mets:mets"];
-  const processXMLRights =
-    processXMLBody["mets:amdSec"][0]["mets:rightsMD"]["mets:mdWrap"]["mets:xmlData"]["odrl:policy"];
+  const processXMLRights = processXMLBody["mets:amdSec"][0]["mets:rightsMD"]["mets:mdWrap"]["mets:xmlData"]["odrl:policy"];
   const LogicalMD = JSON.parse(SIPjson.LogicalStructure);
   const PhysicalMD = JSON.parse(SIPjson.PhysicalStructure);
   const recordingsData = LogicalMD[0].children.map(function (child) {
