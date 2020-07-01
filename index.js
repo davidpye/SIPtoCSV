@@ -5,6 +5,8 @@ let parentSlug = "";
 let identifierPrefix = "";
 let institutionName = "";
 let digitalFilesPath = "";
+const SAMISearchPath = `http://nipper.bl.uk:8080/symws/rest/standard/lookupTitleInfo?clientID=ARMADILLO&marcEntryFilter=TEMPLATE&includeItemInfo=true&titleID=`;
+const SAMISearchType = `&libraryFilter=RECORDING`;
 
 function parseInputs() {
   let shelfmarksString = document.getElementById("shelfMarkInput").value;
@@ -16,23 +18,16 @@ function parseInputs() {
   fetchAll(inputShelfmarks, parentSlug, identifierPrefix, institutionName, digitalFilesPath);
 }
 
-// async function f() {
-//   try {
-//     let response = await fetch('http://no-such-url');
-//   } catch(err) {
-//     alert(err); // TypeError: failed to fetch
-//   }
-// } https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/allSettled
-
 async function fetchAll(shelfmarks) {
   const fetchArray = await Promise.allSettled(shelfmarks.map((element) => fetchSingle(element + ",")));
   const fulfilledArray = fetchArray.filter((item) => item.status === 'fulfilled');
   const rejectedArray = fetchArray.filter((item) => item.status === 'rejected');
+  console.log(`Fulfilled: ` + fulfilledArray.length);
+  console.log(`Rejected: ` + rejectedArray.length);
   const fetchArrayValues = fulfilledArray.map(x => x.value);
   const csvKeys = Object.keys(fetchArrayValues[0]).join(", "); //CSV Header
   const csvValues = fetchArrayValues.map(function (data) {return Object.values(data).join(", ");}); //CSV Row
   const csvOutput = [csvKeys, ...csvValues].join("\n");
-  console.log(rejectedArray);
   if (rejectedArray.length !== 0){
     alert(`WARNING: `+ rejectedArray.length + ((rejectedArray.length > 1) ? ` shelfmarks` : ` shelfmark`) + ` produced errors and` + ((rejectedArray.length > 1) ? ` weren't` : ` wasn't`) + ` accessible.`);
   }
@@ -54,9 +49,44 @@ async function fetchSingle(shelfmark) {
   const ProcessMDXML = convert.xml2js(SIPjson.Submissions[0].METS, {compact: true, spaces: 2});
   const processXMLBody = ProcessMDXML["mets:mets"];
   const processXMLRights = processXMLBody["mets:amdSec"][0]["mets:rightsMD"]["mets:mdWrap"]["mets:xmlData"]["odrl:policy"];
+  const techMDs = processXMLBody["mets:amdSec"].filter(function (element) {
+    return Object.keys(element).some(function (key) {
+      return key === "mets:techMD";
+    });
+  });
   const LogicalMD = JSON.parse(SIPjson.LogicalStructure);
   const PhysicalMD = JSON.parse(SIPjson.PhysicalStructure);
-  const recordingsData = LogicalMD[0].children.map(function (child) {
+  const recordingsIDs = SIPjson.Recordings.map((recording) => recording.SamiId);
+  const catalogueData = await Promise.all(recordingsIDs.map(async(ID) => {
+    const SAMIResponse = await fetch(SAMISearchPath + ID + SAMISearchType);
+    const SAMIResponseXML = await SAMIResponse.text();
+    const SAMIJSON = convert.xml2js(SAMIResponseXML, {compact: true, spaces: 2});
+    const SAMIMARCEntry = SAMIJSON.LookupTitleInfoResponse.TitleInfo.BibliographicInfo.MarcEntryInfo;
+    const SAMIDescription = SAMIMARCEntry.filter((entry) => entry.entryID._text === '506').map((description) => description.text._text).join(' | ');
+    const SAMIContributor = SAMIMARCEntry.filter((entry) => entry.entryID._text === '702').map((contributor) => contributor.text._text).join(' | ');
+    const SAMIRecDate = SAMIMARCEntry.filter((entry) => entry.entryID._text === '260').map((recdate) => recdate.text._text).join(' | ');
+    const SAMILocation = SAMIMARCEntry.filter((entry) => entry.entryID._text === '551').map((location) => location.text._text).join(' | ');
+    const SAMILanguage = SAMIMARCEntry.filter((entry) => entry.entryID._text === '041').map((language) => language.text._text).join(' | ');
+    const SAMIGenre = SAMIMARCEntry.filter((entry) => entry.entryID._text === '633').map((genre) => genre.text._text).join(' | ');
+    const SAMIWebTheme = SAMIMARCEntry.filter((entry) => entry.entryID._text === '634').map((theme) => theme.text._text).join(' | ');
+    const SAMIKeyword = SAMIMARCEntry.filter((entry) => entry.entryID._text === '650').map((keyword) => keyword.text._text).join(' | ');
+    const SAMIDocumentation = SAMIMARCEntry.filter((entry) => entry.entryID._text === '525').map((documentation) => documentation.text._text).join(' | ');
+    const SAMISubject = SAMIMARCEntry.filter((entry) => entry.entryID._text === '660').map((subject) => subject.text._text).join(' | ');
+    const SAMIAccess = SAMIMARCEntry.filter((entry) => entry.entryID._text === '856').map((access) => access.text._text).join(' | ');
+    const SAMILocOriginals = SAMIMARCEntry.filter((entry) => entry.entryID._text === '093').map((locOriginal) => locOriginal.text._text).join(' | ');
+    return {SAMIDescription, SAMIContributor, SAMIRecDate, SAMILocation, SAMILanguage, SAMIGenre, SAMIWebTheme, SAMIKeyword, SAMIDocumentation, SAMISubject, SAMIAccess, SAMILocOriginals};
+  }))
+  const recordingDate = catalogueData.map((recording) => recording.SAMIRecDate).join(`\n`);
+  const locations = catalogueData.map((recording) => recording.SAMILocation).join(`\n`);
+  const languages = catalogueData.map((recording) => recording.SAMILanguage).join(`\n`);
+  const genres = catalogueData.map((recording) => recording.SAMIGenre).join(`\n`);
+  const themes = catalogueData.map((recording) => recording.SAMIWebTheme).join(`\n`);
+  const keywords = catalogueData.map((recording) => recording.SAMIKeyword).join(`\n`);
+  const documentation = catalogueData.map((recording) => recording.SAMIDocumentation).join(`\n`);
+  const subjects = catalogueData.map((recording) => recording.SAMISubject).join(`\n`);
+  const locOriginals = catalogueData.map((recording) => recording.SAMILocOriginals).join(`\n`);
+
+  const recordingsData = LogicalMD[0].children.map(function (child, i) {
     let recordingName = child.text;
     let fileInfo = child.files.map(function (file) {
       let fileName = file.text;
@@ -64,13 +94,13 @@ async function fetchSingle(shelfmark) {
       let fileEnd = file.ranges[0].endH + ":" + file.ranges[0].endM + ":" + file.ranges[0].endS + ":" + file.ranges[0].endF;
         return fileName + '\nStart: ' + fileStart + '\nEnd: ' + fileEnd;
     }).join('\n');
-    return recordingName + '\n' + fileInfo;
+    return recordingName + '\n' + 
+    `Description: ` + catalogueData[i].SAMIDescription + `\n` + 
+    `Location: ` + catalogueData[i].SAMILocation + `\n` + 
+    `Contributors: ` + catalogueData[i].SAMIContributor + `\n` + 
+    fileInfo;
   }).join('\n\n');
-  const techMDs = processXMLBody["mets:amdSec"].filter(function (element) {
-    return Object.keys(element).some(function (key) {
-      return key === "mets:techMD";
-    });
-  });
+
   const transferData = techMDs.map(function (transferFile) {
       let transferFilename = transferFile["mets:techMD"][0]["mets:mdWrap"]["mets:xmlData"]["mediaMD:mediaMD"]["mediaMD:fileData"]["mediaMD:fileName"]._text;
       let transferFormat = transferFile["mets:techMD"][0]["mets:mdWrap"]["mets:xmlData"]["mediaMD:mediaMD"]["mediaMD:fileData"]["mediaMD:format"]._text;
@@ -113,12 +143,14 @@ async function fetchSingle(shelfmark) {
           return processDescription + `:\n` + devices;
         }).join(`\n`);
       return (transferFilename + `\n` + `Format: ` + transferFormat + ` ` + transferBitdepth + `Bit ` + transferSamplerate + `Hz ` + (transferChannels > 1 ? transferChannels + ` Channel` + `s` : transferChannels + ` Channel`) + `\n` + transferProcesses);
-    }).join(`\n`);
+  }).join(`\n`);
+
   const createdFilePaths = SIPjson.Files.map(function (file) {
     let fileName = file.Name;
     let filePath = digitalFilesPath + fileName;
     return filePath;
   }).join(`\n`);
+
   const csvData = {
     legacyId: "",
     parentId: "",
@@ -141,24 +173,24 @@ async function fetchSingle(shelfmark) {
     script: "",
     languageNote: "",
     physicalCharacteristics: '"' + transferData + '"',
-    findingAids: "",
-    locationOfOriginals: "",
+    findingAids: '"' + documentation + '"',
+    locationOfOriginals: '"' + locOriginals + '"',
     locationOfCopies: "The British Library",
     relatedUnitsOfDescription: "",
     publicationNote: "",
     digitalObjectURI: '"' + createdFilePaths + '"',
     generalNote: "",
-    subjectAccessPoints: "",
-    placeAccessPoints: "",
+    subjectAccessPoints: '"' + subjects + keywords + themes + '"',
+    placeAccessPoints: '"' + locations + '"',
     nameAccessPoints: "",
-    genreAccessPoints: "",
+    genreAccessPoints: '"' + genres + '"',
     descriptionIdentifier: "",
     institutionIdentifier: "",
     rules: "",
     descriptionStatus: "",
     levelOfDetail: "",
     revisionHistory: "",
-    languageOfDescription: "",
+    languageOfDescription: '"' + languages + '"',
     scriptOfDescription: "",
     sources: "",
     archivistNote: "",
@@ -168,10 +200,10 @@ async function fetchSingle(shelfmark) {
     physicalObjectType: "",
     alternativeIdentifiers: "",
     alternativeIdentifierLabels: "",
-    eventDates: SIPjson.Submissions[0].Submitted,
-    eventTypes: "SIP Ingested",
-    eventStartDates: SIPjson.Submissions[0].Submitted,
-    eventEndDates: SIPjson.Submissions[0].Submitted,
+    eventDates: '"' + recordingDate + '"',
+    eventTypes: "Creation",
+    eventStartDates: "",
+    eventEndDates: "",
     eventActors: "",
     eventActorHistories: "",
     culture: "",
