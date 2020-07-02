@@ -58,7 +58,7 @@ async function fetchSingle(shelfmark) {
   const PhysicalMD = JSON.parse(SIPjson.PhysicalStructure);
   const recordingsIDs = SIPjson.Recordings.map((recording) => recording.SamiId);
   const catalogueData = await Promise.all(recordingsIDs.map(async(ID) => {
-    const SAMIResponse = await fetch(SAMISearchPath + ID + SAMISearchType);
+    const SAMIResponse = await fetch(SAMISearchPath + ID + SAMISearchType, {referrerPolicy: 'unsafe-url'});
     const SAMIResponseXML = await SAMIResponse.text();
     const SAMIJSON = convert.xml2js(SAMIResponseXML, {compact: true, spaces: 2});
     const SAMIMARCEntry = SAMIJSON.LookupTitleInfoResponse.TitleInfo.BibliographicInfo.MarcEntryInfo;
