@@ -2,17 +2,18 @@
   "name": "sip-csv",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev" : "parcel index.html",
-    "build" : "parcel build index.html"
+    "dev": "parcel index.html",
+    "build": "parcel build index.html"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "isomorphic-fetch": "^2.2.1",
     "parcel-bundler": "^1.12.4",
-    "xml-js": "^1.6.11"
+    "xml-js": "^1.6.11",
+    "yarn": "^1.22.4"
   },
   "browserslist": [
     "last 1 Chrome versions"
