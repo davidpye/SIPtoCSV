@@ -30,6 +30,7 @@ async function fetchAll(shelfmarks) {
   if (rejectedArray.length !== 0) {
     alert(`WARNING: ` + rejectedArray.length + (rejectedArray.length > 1 ? ` shelfmarks` : ` shelfmark`) + ` produced errors and` + (rejectedArray.length > 1 ? ` weren't` : ` wasn't`) + ` accessible.`);
   }
+  
   //Create CSV File from data and download
   const element = document.createElement("a");
   const file = new Blob([csvOutput], { type: "text/plain" });
@@ -64,7 +65,6 @@ async function fetchSingle(shelfmark) {
   const documentation = catalogueData.map((recording) => recording.SAMIDocumentation).join(`\n`);
   const subjects = catalogueData.map((recording) => recording.SAMISubject).join(`\n`);
   const locOriginals = catalogueData.map((recording) => recording.SAMILocOriginals).join(`\n`);
-
   const recordingsData = LogicalMD[0].children.map(function (child, i) {
       let recordingName = child.text;
       let fileInfo = child.files.map(function (file) {
@@ -130,10 +130,10 @@ async function fetchSingle(shelfmark) {
   const csvData = {
     legacyId: "",
     parentId: "",
-    qubitParentSlug: parentSlug !== "" ? parentSlug : SIPjson.SamiTitle.toString().replace(/[,. \s+]/g, `-`).toLowerCase(),
+    qubitParentSlug: parentSlug !== "" ? parentSlug : ``, //SIPjson.SamiTitle.toString().replace(/[,. \s+]/g, `-`).toLowerCase(),
     identifier: identifierPrefix !== "" ? identifierPrefix + "/" + SIPjson.SamiCallNumber : SIPjson.SamiCallNumber,
     accessionNumber: "",
-    title: '"' + SIPjson.SamiTitle.toString().replace(/,/g, ` `) + '"',
+    title: '"' + SIPjson.SamiCallNumber + `: ` + SIPjson.SamiTitle.toString().replace(/,/g, ` `) + '"',
     levelOfDescription: "Product",
     extentAndMedium: LogicalMD[0].children[0].files.length + ` Wave format Audio File` + (LogicalMD[0].children[0].files.length > 1 ? `s` : ``),
     repository: institutionName,
@@ -147,7 +147,7 @@ async function fetchSingle(shelfmark) {
     reproductionConditions: '"' + `Rights Attribution: ` + processXMLRights["dc:rights"]._text + `\nRights Contributor: ` + processXMLRights["dc:contributor"]._text + `\nRights Provenance: ` + processXMLRights["dc:provenance"]._text + '"',
     language: "",
     script: "",
-    languageNote: "",
+    languageNote: '"' `Language of Material: ` + languages + '"',
     physicalCharacteristics: '"' + transferData + '"',
     findingAids: '"' + documentation + '"',
     locationOfOriginals: '"' + locOriginals + '"',
@@ -165,8 +165,8 @@ async function fetchSingle(shelfmark) {
     rules: "",
     descriptionStatus: "",
     levelOfDetail: "",
-    revisionHistory: "",
-    languageOfDescription: '"' + languages + '"',
+    revisionHistory: '"' + `Original Recording: ` + recordingDate + `Digitisation: ` +  +'"',
+    languageOfDescription: "",
     scriptOfDescription: "",
     sources: "",
     archivistNote: "",
