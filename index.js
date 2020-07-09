@@ -49,7 +49,6 @@ async function fetchAll(shelfmarks) {
     handleCompleted();
     alert(`WARNING: ` + rejectedArray.length + (rejectedArray.length > 1 ? ` shelfmarks` : ` shelfmark`) + ` produced errors and` + (rejectedArray.length > 1 ? ` weren't` : ` wasn't`) + ` accessible.`);
   }
-  
   //Create CSV File from data and download
   const element = document.createElement("a");
   const file = new Blob([csvOutput], { type: "text/plain" });
@@ -204,5 +203,6 @@ async function fetchSingle(shelfmark) {
     eventActorHistories: "",
     culture: "",
   };
+  console.log(csvData);
   return csvData;
 }
