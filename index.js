@@ -37,6 +37,10 @@ async function fetchAll(shelfmarks) {
   const rejectedArray = fetchArray.filter((item) => item.status === "rejected");
   console.log(`Fulfilled: ` + fulfilledArray.length);
   console.log(`Rejected: ` + rejectedArray.length);
+  if (fulfilledArray.length === 0) {
+    handleCompleted();
+    alert(`WARNING: ` + rejectedArray.length + (rejectedArray.length > 1 ? ` shelfmarks` : ` shelfmark`) + ` produced errors and` + (rejectedArray.length > 1 ? ` weren't` : ` wasn't`) + ` accessible. \n Please check your connection to the SIP Tool.`);
+  }
   const fetchArrayValues = fulfilledArray.map((x) => x.value);
   const csvKeys = Object.keys(fetchArrayValues[0]).join(", "); //CSV Header
   const csvValues = fetchArrayValues.map(function (data) {return Object.values(data).join(", ");}); //CSV Row
