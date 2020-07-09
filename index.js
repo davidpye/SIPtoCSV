@@ -1,12 +1,26 @@
 import convert from "xml-js";
-
-document.getElementById("Submit").addEventListener("click", parseInputs);
+const submit = document.getElementById("Submit");
+submit.addEventListener("click", parseInputs);
+const spinner = document.querySelector('.sk-cube-grid');
 let parentSlug = "";
 let identifierPrefix = "";
 let institutionName = "";
 let digitalFilesPath = "";
 
+function handleLoading() {
+  spinner.style.display = "block";
+  submit.style.color = "#f4f3ee52";
+  submit.disabled = true;
+}
+
+function handleCompleted() {
+  spinner.style.display = "none";
+  submit.style.color = "#f4f3ee";
+  submit.disabled = false;
+}
+
 function parseInputs() {
+  handleLoading();
   let shelfmarksString = document.getElementById("shelfMarkInput").value;
   let inputShelfmarks = shelfmarksString.replace(/[/]/g, "!2F").replace(/[,]/g, "").replace(/\r/g, "").split(/\s+/g);
   parentSlug = document.getElementById("qubitParentSlug").value;
@@ -28,6 +42,7 @@ async function fetchAll(shelfmarks) {
   const csvValues = fetchArrayValues.map(function (data) {return Object.values(data).join(", ");}); //CSV Row
   const csvOutput = [csvKeys, ...csvValues].join("\n");
   if (rejectedArray.length !== 0) {
+    handleCompleted();
     alert(`WARNING: ` + rejectedArray.length + (rejectedArray.length > 1 ? ` shelfmarks` : ` shelfmark`) + ` produced errors and` + (rejectedArray.length > 1 ? ` weren't` : ` wasn't`) + ` accessible.`);
   }
   
@@ -38,6 +53,7 @@ async function fetchAll(shelfmarks) {
   element.download = new Date().toISOString() + ".csv";
   document.body.appendChild(element);
   element.click();
+  handleCompleted();
 }
 
 async function fetchSingle(shelfmark) {
