@@ -33,6 +33,7 @@ function parseInputs() {
 
 async function fetchAll(shelfmarks) {
   const fetchArray = await Promise.allSettled(shelfmarks.map((element) => fetchSingle(element + ",")));
+  console.log(fetchArray);
   const fulfilledArray = fetchArray.filter((item) => item.status === "fulfilled");
   const rejectedArray = fetchArray.filter((item) => item.status === "rejected");
   console.log(`Fulfilled: ` + fulfilledArray.length);
@@ -75,6 +76,7 @@ async function fetchSingle(shelfmark) {
   const recordingsIDs = SIPjson.Recordings.map((recording) => recording.SamiId);
   const catalogueDataResponse = await fetch(`/api/catalogueData?ids=${recordingsIDs.join(',')}`);
   const catalogueData = await catalogueDataResponse.json();
+  console.log(catalogueData);
   const recordingDate = catalogueData.map((recording) => recording.SAMIRecDate).join(`\n`);
   const locations = catalogueData.map((recording) => recording.SAMILocation).join(`\n`);
   const languages = catalogueData.map((recording) => recording.SAMILanguage).join(`\n`);
@@ -95,7 +97,7 @@ async function fetchSingle(shelfmark) {
       return (recordingName + "\n" + `Description: ` + catalogueData[i].SAMIDescription + `\n` + `Location: ` + catalogueData[i].SAMILocation + `\n` + `Contributors: ` + catalogueData[i].SAMIContributor + `\n` + fileInfo
       );
     }).join("\n\n");
-
+  console.log(recordingsData);
   const transferData = techMDs.map(function (transferFile) {
       let transferFilename = transferFile["mets:techMD"][0]["mets:mdWrap"]["mets:xmlData"]["mediaMD:mediaMD"]["mediaMD:fileData"]["mediaMD:fileName"]._text;
       let transferFormat = transferFile["mets:techMD"][0]["mets:mdWrap"]["mets:xmlData"]["mediaMD:mediaMD"]["mediaMD:fileData"]["mediaMD:format"]._text;
@@ -139,7 +141,7 @@ async function fetchSingle(shelfmark) {
         }).join(`\n`);
       return (transferFilename + `\n` + `Format: ` + transferFormat + ` ` + transferBitdepth + `Bit ` + transferSamplerate + `Hz ` + (transferChannels > 1 ? transferChannels + ` Channel` + `s` : transferChannels + ` Channel`) + `\n` + transferProcesses);
     }).join(`\n`);
-
+  console.log(transferData);
   const createdFilePaths = SIPjson.Files.map(function (file) {
     let fileName = file.Name;
     let filePath = digitalFilesPath + fileName;
@@ -166,7 +168,7 @@ async function fetchSingle(shelfmark) {
     reproductionConditions: '"' + `Rights Attribution: ` + processXMLRights["dc:rights"]._text + `\nRights Contributor: ` + processXMLRights["dc:contributor"]._text + `\nRights Provenance: ` + processXMLRights["dc:provenance"]._text + '"',
     language: "",
     script: "",
-    languageNote: '"' `Language of Material: ` + languages + '"',
+    languageNote: '"' + `Language of Material: ` + languages + '"',
     physicalCharacteristics: '"' + transferData + '"',
     findingAids: '"' + documentation + '"',
     locationOfOriginals: '"' + locOriginals + '"',
@@ -184,7 +186,7 @@ async function fetchSingle(shelfmark) {
     rules: "",
     descriptionStatus: "",
     levelOfDetail: "",
-    revisionHistory: '"' + `Original Recording: ` + recordingDate + `Digitisation: ` +  +'"',
+    revisionHistory: "",
     languageOfDescription: "",
     scriptOfDescription: "",
     sources: "",
@@ -203,6 +205,5 @@ async function fetchSingle(shelfmark) {
     eventActorHistories: "",
     culture: "",
   };
-  console.log(csvData);
   return csvData;
 }
