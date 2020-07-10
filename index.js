@@ -7,6 +7,9 @@ let identifierPrefix = "";
 let institutionName = "";
 let digitalFilesPath = "";
 
+// Pull EQ Settings for post-migration EQ process
+// Request SIP including Pre-amp EQ settings
+
 function handleLoading() {
   spinner.style.display = "block";
   submit.style.color = "#f4f3ee52";
@@ -50,7 +53,7 @@ async function fetchAll(shelfmarks) {
     handleCompleted();
     alert(`WARNING: ` + rejectedArray.length + (rejectedArray.length > 1 ? ` shelfmarks` : ` shelfmark`) + ` produced errors and` + (rejectedArray.length > 1 ? ` weren't` : ` wasn't`) + ` accessible.`);
   }
-  //Create CSV File from data and download
+  // Create CSV File from data and download
   const element = document.createElement("a");
   const file = new Blob([csvOutput], { type: "text/plain" });
   element.href = URL.createObjectURL(file);
@@ -74,9 +77,8 @@ async function fetchSingle(shelfmark) {
   const LogicalMD = JSON.parse(SIPjson.LogicalStructure);
   const PhysicalMD = JSON.parse(SIPjson.PhysicalStructure);
   const recordingsIDs = SIPjson.Recordings.map((recording) => recording.SamiId);
-  const catalogueDataResponse = await fetch(`/api/catalogueData?ids=${recordingsIDs.join(',')}`);
+  const catalogueDataResponse = await fetch(`/api/catalogueData?ids=${recordingsIDs.join(`,`)}`);
   const catalogueData = await catalogueDataResponse.json();
-  console.log(catalogueData);
   const recordingDate = catalogueData.map((recording) => recording.SAMIRecDate).join(`\n`);
   const locations = catalogueData.map((recording) => recording.SAMILocation).join(`\n`);
   const languages = catalogueData.map((recording) => recording.SAMILanguage).join(`\n`);
@@ -94,10 +96,9 @@ async function fetchSingle(shelfmark) {
           let fileEnd = file.ranges[0].endH + ":" + file.ranges[0].endM + ":" + file.ranges[0].endS + ":" + file.ranges[0].endF;
           return fileName + "\nStart: " + fileStart + "\nEnd: " + fileEnd;
         }).join("\n");
-      return (recordingName + "\n" + `Description: ` + catalogueData[i].SAMIDescription + `\n` + `Location: ` + catalogueData[i].SAMILocation + `\n` + `Contributors: ` + catalogueData[i].SAMIContributor + `\n` + fileInfo
+      return (recordingName + "\n" + `Description: ` + catalogueData[i].SAMIDescription.replace(/"/g, ``) + `\n` + `Location: ` + catalogueData[i].SAMILocation + `\n` + `Contributors: ` + catalogueData[i].SAMIContributor + `\n` + fileInfo
       );
-    }).join("\n\n");
-  console.log(recordingsData);
+    }).join(`\n\n`);
   const transferData = techMDs.map(function (transferFile) {
       let transferFilename = transferFile["mets:techMD"][0]["mets:mdWrap"]["mets:xmlData"]["mediaMD:mediaMD"]["mediaMD:fileData"]["mediaMD:fileName"]._text;
       let transferFormat = transferFile["mets:techMD"][0]["mets:mdWrap"]["mets:xmlData"]["mediaMD:mediaMD"]["mediaMD:fileData"]["mediaMD:format"]._text;
@@ -110,21 +111,32 @@ async function fetchSingle(shelfmark) {
           let processDevicesArray = processDevices.length ? processDevices : [processDevices];
           let devices = processDevicesArray.map(function (processDevice) {
               let deviceRole = processDevice._attributes.functionalRole;
-              let deviceMan = processDevice._attributes.manufacturer;
-              let deviceModel = processDevice._attributes.modelName;
+              let deviceMan = processDevice._attributes.manufacturer !== undefined ? processDevice._attributes.manufacturer : ``;
+              let deviceModel = processDevice._attributes.modelName !== undefined ? processDevice._attributes.modelName : ``;
               let deviceSerial = processDevice._attributes.serialNumber !== undefined ? processDevice._attributes.serialNumber : "N/A";
+              let deviceType = processDevice._attributes.type !== undefined ? processDevice._attributes.type : ``;
+              let deviceComponents = processDevice["blaph:component"] !== undefined ? processDevice["blaph:component"] : ``;
+              let deviceComponentArray = deviceComponents.length ? deviceComponents : [deviceComponents];
+              let components = deviceComponentArray.map(function (deviceComponent){
+                  let compMan = deviceComponent._attributes !== undefined && deviceComponent._attributes.manufacturer !== `` && deviceComponent._attributes.manufacturer !== `Not known` ? deviceComponent._attributes.manufacturer : ``;
+                  let compModel = deviceComponent._attributes !== undefined && deviceComponent._attributes.modelName !== `` ? deviceComponent._attributes.modelName : ``;
+                  let compType = deviceComponent._attributes !== undefined && deviceComponent._attributes.type !== `` ? deviceComponent._attributes.type : ``;
+                  let compTrackingForce = deviceComponent["blaph:settings"] !==undefined && deviceComponent["blaph:settings"]["blaph:trackingForce"] !==undefined ? deviceComponent["blaph:settings"]["blaph:trackingForce"]._text : ``;
+                  return ((compMan !== `` ? compMan + ` ` : ``) + (compModel !== `` ? compModel + ` ` : ``) + (compType !==`` ? compType : ``) + (compTrackingForce !==`` ? ` (Tracking Force: ` + compTrackingForce + `g)` : ``));
+                }).join(', ');
               let deviceParameters = processDevice["blaph:settings"];
               let deviceParameterArray = deviceParameters.length ? deviceParameters : [deviceParameters];
               let parameters = deviceParameterArray.map(function (deviceParameter) {
                   let tempParameter = deviceParameter["blaph:temperature"] && deviceParameter["blaph:temperature"]._attributes !== undefined ? `Temperature: ` + deviceParameter["blaph:temperature"]._text + ` Degrees ` + deviceParameter["blaph:temperature"]._attributes.units : ``;
                   let timeParameter = deviceParameter["blaph:time"] && deviceParameter["blaph:time"]._attributes !== undefined ? ", Time: " + deviceParameter["blaph:time"]._text + ` ` + deviceParameter["blaph:time"]._attributes.units : ``;
-                  let eqParameter = deviceParameter["blaph:equalisation"] && deviceParameter[`blaph:equalisation`]._attributes.standard !== undefined ? `Replay EQ: ` + deviceParameter[`blaph:equalisation`]._attributes.standard : ``;
+                  let eqParameter = deviceParameter["blaph:equalisation"] && deviceParameter[`blaph:equalisation`]._attributes !== undefined ? `Replay EQ: ` + deviceParameter[`blaph:equalisation`]._attributes.standard : `Replay EQ: N/A`;
                   let speedParameter = deviceParameter["blaph:replaySpeed"] && deviceParameter["blaph:replaySpeed"]._text !== undefined ? `, Replay Speed: ` + deviceParameter["blaph:replaySpeed"]._text + `cm/s` : ``;
                   let nrParameter = deviceParameter["blaph:noiseReduction"] && deviceParameter["blaph:noiseReduction"]._attributes.type !== undefined ? `, Noise Reduction: ` + deviceParameter["blaph:noiseReduction"]._attributes.type : ``;
-                  let deviceNotes = deviceParameter["blaph:settingsNote"] && deviceParameter["blaph:settingsNote"]._text !== undefined ? `\nNote: ` + deviceParameter[`blaph:settingsNote`]._text : ``;
+                  let deviceNotes = deviceParameter["blaph:settingsNote"] && deviceParameter["blaph:settingsNote"]._text !== undefined && deviceParameter["blaph:settingsNote"]._text !== `` ? `\nNote: ` + deviceParameter[`blaph:settingsNote`]._text : ``;
                   return ((deviceRole == `Heater` ? tempParameter + timeParameter : ``) + (deviceRole == `Reproducer` ? eqParameter + speedParameter + nrParameter : ``) + (deviceNotes !== `` ? deviceNotes : ``));
                 }).join();
               let inputs = [];
+              let outputs = [];
               if (processDevice["blaph:connections"] === undefined) {
                 inputs = [];
               } else if (processDevice["blaph:connections"]["blaph:input"] !== undefined) {
@@ -132,16 +144,24 @@ async function fetchSingle(shelfmark) {
                     let inputFormat = input._attributes.signalFormat;
                     let inputInterface = input._attributes.interfaceType;
                     let inputChannel = input._attributes.channel;
-                    return (inputFormat + ` ` + inputInterface + ` - ` + inputChannel);
-                  }).join(` & `);
+                    return (inputFormat + ` ` + inputInterface + `: ` + inputChannel);
+                }).join(` & `);
+              } else if (processDevice["blaph:connections"]["blaph:output"] !== undefined) {
+                outputs = processDevice["blaph:connections"]["blaph:output"].map(function (output) {
+                    let outputFormat = output._attributes.signalFormat;
+                    let outputInterface = output._attributes.interfaceType;
+                    let outputChannel = output._attributes.channel;
+                    return (outputFormat + ` ` + outputInterface + `: ` + outputChannel);
+                }).join(` & `);
               }
-              return (deviceRole + `: ` + deviceMan + ` ` + deviceModel + (deviceSerial !== `` ? `, S/N: ` + deviceSerial : ``) + (parameters !== `` ? `\nDevice Parameters: ` + parameters : ``) + (inputs !== "" ? `\n` + inputs : ``));
-            }).join("\n");
+              return (deviceRole + `: ` + deviceMan + ` ` + deviceModel + ` ` + deviceType + (deviceSerial !== `` ? `, S/N: ` + deviceSerial : ``) + 
+              (components !== `` ? `\nDevice Components: ` + components : ``) + 
+              (parameters !== `` ? `\nDevice Parameters: ` + parameters : ``) + (inputs.length !== 0 ? `\nInputs: ` + inputs : ``) + (outputs.length !== 0 ? `\nOutputs: ` + outputs : ``) + `\n`);
+            }).join(``);
           return processDescription + `:\n` + devices;
         }).join(`\n`);
       return (transferFilename + `\n` + `Format: ` + transferFormat + ` ` + transferBitdepth + `Bit ` + transferSamplerate + `Hz ` + (transferChannels > 1 ? transferChannels + ` Channel` + `s` : transferChannels + ` Channel`) + `\n` + transferProcesses);
     }).join(`\n`);
-  console.log(transferData);
   const createdFilePaths = SIPjson.Files.map(function (file) {
     let fileName = file.Name;
     let filePath = digitalFilesPath + fileName;
