@@ -53,8 +53,7 @@ async function fetchAll(shelfmarks) {
     handleCompleted();
     alert(`WARNING: ` + rejectedArray.length + (rejectedArray.length > 1 ? ` shelfmarks` : ` shelfmark`) + ` produced errors and` + (rejectedArray.length > 1 ? ` weren't` : ` wasn't`) + ` accessible.`);
   }
-  // Create CSV File from data and download
-  const element = document.createElement("a");
+  const element = document.createElement("a"); // Create CSV File from data and download
   const file = new Blob([csvOutput], { type: "text/plain" });
   element.href = URL.createObjectURL(file);
   element.download = new Date().toISOString() + ".csv";
@@ -94,9 +93,9 @@ async function fetchSingle(shelfmark) {
           let fileName = file.text;
           let fileStart = file.ranges[0].startH + ":" + file.ranges[0].startM + ":" + file.ranges[0].startS + ":" + file.ranges[0].startF;
           let fileEnd = file.ranges[0].endH + ":" + file.ranges[0].endM + ":" + file.ranges[0].endS + ":" + file.ranges[0].endF;
-          return fileName + "\nStart: " + fileStart + "\nEnd: " + fileEnd;
+          return `Filename and Duration:` + fileName + " Start: " + fileStart + " End: " + fileEnd;
         }).join("\n");
-      return (recordingName + "\n" + `Description: ` + catalogueData[i].SAMIDescription.replace(/"/g, ``) + `\n` + `Location: ` + catalogueData[i].SAMILocation + `\n` + `Contributors: ` + catalogueData[i].SAMIContributor + `\n` + fileInfo
+      return (recordingName + "\n" + `Description: ` + catalogueData[i].SAMIDescription.replace(/"/g, ``) + `\n` + `Recording Location: ` + catalogueData[i].SAMILocation + `\n` + `Contributors: ` + catalogueData[i].SAMIContributor + `\n` + fileInfo
       );
     }).join(`\n\n`);
   const transferData = techMDs.map(function (transferFile) {
@@ -129,11 +128,26 @@ async function fetchSingle(shelfmark) {
               let parameters = deviceParameterArray.map(function (deviceParameter) {
                   let tempParameter = deviceParameter["blaph:temperature"] && deviceParameter["blaph:temperature"]._attributes !== undefined ? `Temperature: ` + deviceParameter["blaph:temperature"]._text + ` Degrees ` + deviceParameter["blaph:temperature"]._attributes.units : ``;
                   let timeParameter = deviceParameter["blaph:time"] && deviceParameter["blaph:time"]._attributes !== undefined ? ", Time: " + deviceParameter["blaph:time"]._text + ` ` + deviceParameter["blaph:time"]._attributes.units : ``;
-                  let eqParameter = deviceParameter["blaph:equalisation"] && deviceParameter[`blaph:equalisation`]._attributes !== undefined ? `Replay EQ: ` + deviceParameter[`blaph:equalisation`]._attributes.standard : `Replay EQ: N/A`;
+                  let eqStandard = deviceParameter["blaph:equalisation"] && deviceParameter[`blaph:equalisation`]._attributes !== undefined ? `Replay EQ: ` + deviceParameter[`blaph:equalisation`]._attributes.standard : `Replay EQ: N/A`;
+        // if EQ turnovers exists loop them
+                  let eqTurnovers;
+                  if (deviceParameter["blaph:equalisation"] && deviceParameter["blaph:equalisation"]["blaph:turnover1"] !== undefined){
+                    let eqArray = deviceParameter["blaph:equalisation"].length ? deviceParameter["blaph:equalisation"] : [deviceParameter["blaph:equalisation"]];
+                    console.log(eqArray + `THIS WORKS`);
+                    /*  eqTurnovers = eqArray.map((turnover, i) => {
+                      let turnoverFreq = turnover["blaph:turnover"] !== undefined && turnover["blaph:turnover"]._text !== `` ? turnover["blaph:turnover"]._text : ``;
+                      let turnoverSlope = turnover["blaph:slope"] !== undefined && turnover["blaph:slope"]._text !== `` ? turnover["blaph:slope"]._text : ``;
+                      console.log (eqTurnovers + ` ` + i);
+                      return ((turnoverFreq !== `` ? `EQ Turnover ` + i + ` Frequency: ` + turnoverFreq + `Hz `: ``) + (turnoverSlope !== `` ? `Slope: ` + turnoverSlope + ` dB/8ve` : ``));
+                    }).join();
+                  } else {
+                    eqTurnovers = ``;*/
+                  }
+                  
                   let speedParameter = deviceParameter["blaph:replaySpeed"] && deviceParameter["blaph:replaySpeed"]._text !== undefined ? `, Replay Speed: ` + deviceParameter["blaph:replaySpeed"]._text + `cm/s` : ``;
                   let nrParameter = deviceParameter["blaph:noiseReduction"] && deviceParameter["blaph:noiseReduction"]._attributes.type !== undefined ? `, Noise Reduction: ` + deviceParameter["blaph:noiseReduction"]._attributes.type : ``;
                   let deviceNotes = deviceParameter["blaph:settingsNote"] && deviceParameter["blaph:settingsNote"]._text !== undefined && deviceParameter["blaph:settingsNote"]._text !== `` ? `\nNote: ` + deviceParameter[`blaph:settingsNote`]._text : ``;
-                  return ((deviceRole == `Heater` ? tempParameter + timeParameter : ``) + (deviceRole == `Reproducer` ? eqParameter + speedParameter + nrParameter : ``) + (deviceNotes !== `` ? deviceNotes : ``));
+                  return ((deviceRole == `Heater` ? tempParameter + timeParameter : ``) + (deviceRole == `Reproducer` ? eqStandard + speedParameter + nrParameter : ``) + (deviceRole == "Equaliser/Filter" && eqTurnovers !==`` ? eqTurnovers : ``) + (deviceNotes !== `` ? deviceNotes : ``));
                 }).join();
               let inputs = [];
               let outputs = [];
@@ -197,7 +211,7 @@ async function fetchSingle(shelfmark) {
     publicationNote: "",
     digitalObjectURI: '"' + createdFilePaths + '"',
     generalNote: "",
-    subjectAccessPoints: '"' + subjects + keywords + themes + '"',
+    subjectAccessPoints: '"' + (subjects !== `` ? subjects + ` | ` : ``) + (keywords !==`` ? keywords + ` | ` : ``) + (themes !==`` ? themes + ` | ` : ``) + '"',
     placeAccessPoints: '"' + locations + '"',
     nameAccessPoints: "",
     genreAccessPoints: '"' + genres + '"',

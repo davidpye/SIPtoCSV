@@ -3,6 +3,11 @@ const convert = require('xml-js');
 const SAMISearchPath = `http://nipper.bl.uk:8080/symws/rest/standard/lookupTitleInfo?clientID=ARMADILLO&marcEntryFilter=TEMPLATE&includeItemInfo=true&titleID=`;
 const SAMISearchType = `&libraryFilter=RECORDING`;
 
+// http://nipper.bl.uk:8080/symws/rest/standard/lookupTitleInfo?clientID=ARMADILLO&marcEntryFilter=564&includeItemInfo=true&titleID=8218617&libraryFilter=PRODUCT
+// Original(s): 1 tape reel 12.5 cm 19 cm/sec mono
+// Surrogate(s): 1 Wave format Audio File
+
+
 module.exports = async (req, res) => {
   const recordingsIDs = req.query.ids.split(',');
   const catalogueData = await Promise.all(recordingsIDs.map(async (ID) => {
