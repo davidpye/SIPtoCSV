@@ -82,10 +82,10 @@ async function fetchSingle(shelfmark) {
   const locations = catalogueData.map((recording) => recording.SAMILocation).join(`\n`);
   const languages = catalogueData.map((recording) => recording.SAMILanguage).join(`\n`);
   const genres = catalogueData.map((recording) => recording.SAMIGenre).join(`\n`);
-  const themes = catalogueData.map((recording) => recording.SAMIWebTheme).join(`\n`);
-  const keywords = catalogueData.map((recording) => recording.SAMIKeyword).join(`\n`);
+  const themes = catalogueData.map((recording) => recording.SAMIWebTheme).join(``);
+  const keywords = catalogueData.map((recording) => recording.SAMIKeyword).join(``);
   const documentation = catalogueData.map((recording) => recording.SAMIDocumentation).join(`\n`);
-  const subjects = catalogueData.map((recording) => recording.SAMISubject).join(`\n`);
+  const subjects = catalogueData.map((recording) => recording.SAMISubject).join(``);
   const locOriginals = catalogueData.map((recording) => recording.SAMILocOriginals).join(`\n`);
   const recordingsData = LogicalMD[0].children.map(function (child, i) {
       let recordingName = child.text;
@@ -93,7 +93,7 @@ async function fetchSingle(shelfmark) {
           let fileName = file.text;
           let fileStart = file.ranges[0].startH + ":" + file.ranges[0].startM + ":" + file.ranges[0].startS + ":" + file.ranges[0].startF;
           let fileEnd = file.ranges[0].endH + ":" + file.ranges[0].endM + ":" + file.ranges[0].endS + ":" + file.ranges[0].endF;
-          return `Filename and Duration:` + fileName + " Start: " + fileStart + " End: " + fileEnd;
+          return `Filename and Duration: ` + fileName + "\nStart: " + fileStart + " End: " + fileEnd;
         }).join("\n");
       return (recordingName + "\n" + `Description: ` + catalogueData[i].SAMIDescription.replace(/"/g, ``) + `\n` + `Recording Location: ` + catalogueData[i].SAMILocation + `\n` + `Contributors: ` + catalogueData[i].SAMIContributor + `\n` + fileInfo
       );
@@ -133,17 +133,19 @@ async function fetchSingle(shelfmark) {
                   let eqTurnovers;
                   if (deviceParameter["blaph:equalisation"] && deviceParameter["blaph:equalisation"]["blaph:turnover1"] !== undefined){
                     let eqArray = deviceParameter["blaph:equalisation"].length ? deviceParameter["blaph:equalisation"] : [deviceParameter["blaph:equalisation"]];
-                    console.log(eqArray + `THIS WORKS`);
-                    /*  eqTurnovers = eqArray.map((turnover, i) => {
-                      let turnoverFreq = turnover["blaph:turnover"] !== undefined && turnover["blaph:turnover"]._text !== `` ? turnover["blaph:turnover"]._text : ``;
-                      let turnoverSlope = turnover["blaph:slope"] !== undefined && turnover["blaph:slope"]._text !== `` ? turnover["blaph:slope"]._text : ``;
-                      console.log (eqTurnovers + ` ` + i);
-                      return ((turnoverFreq !== `` ? `EQ Turnover ` + i + ` Frequency: ` + turnoverFreq + `Hz `: ``) + (turnoverSlope !== `` ? `Slope: ` + turnoverSlope + ` dB/8ve` : ``));
-                    }).join();
+                    let turnoverArray = eqArray.map((eqs) => {
+                      let eqSettings = Object.values(eqs).map((turnover, i) => {
+                        let turnoverFreq = turnover["blaph:turnover"] !== undefined && turnover["blaph:turnover"]._text !== `` && turnover["blaph:turnover"]._text !== `0` ? turnover["blaph:turnover"]._text : ``;
+                        let turnoverSlope = turnover["blaph:slope"] !== undefined && turnover["blaph:slope"]._text !== `` && turnover["blaph:slope"]._text !== `0` ? turnover["blaph:slope"]._text : ``;
+                        return ((turnoverFreq !== `` ? `EQ Turnover ` + (i+1) + ` Frequency: ` + turnoverFreq + `Hz `: ``) + (turnoverSlope !== `` ? `Slope: ` + turnoverSlope + ` dB/8ve` : ``));
+                      }).join(`, `);
+                      eqTurnovers = eqSettings;
+                      //return (eqSettings);
+                    });
+                    // return (turnoverArray);
                   } else {
-                    eqTurnovers = ``;*/
+                    eqTurnovers = ``;
                   }
-                  
                   let speedParameter = deviceParameter["blaph:replaySpeed"] && deviceParameter["blaph:replaySpeed"]._text !== undefined ? `, Replay Speed: ` + deviceParameter["blaph:replaySpeed"]._text + `cm/s` : ``;
                   let nrParameter = deviceParameter["blaph:noiseReduction"] && deviceParameter["blaph:noiseReduction"]._attributes.type !== undefined ? `, Noise Reduction: ` + deviceParameter["blaph:noiseReduction"]._attributes.type : ``;
                   let deviceNotes = deviceParameter["blaph:settingsNote"] && deviceParameter["blaph:settingsNote"]._text !== undefined && deviceParameter["blaph:settingsNote"]._text !== `` ? `\nNote: ` + deviceParameter[`blaph:settingsNote`]._text : ``;
