@@ -80,7 +80,7 @@ async function fetchSingle(shelfmark) {
   const catalogueData = await catalogueDataResponse.json();
   const recordingDate = catalogueData.map((recording) => recording.SAMIRecDate).join(`\n`);
   const locations = catalogueData.map((recording) => recording.SAMILocation).join(`\n`);
-  const languages = catalogueData.map((recording) => recording.SAMILanguage).join(`\n`);
+  const languages = catalogueData.map((recording) => recording.SAMILanguage).join(`, `)
   const genres = catalogueData.map((recording) => recording.SAMIGenre).join(`\n`);
   const themes = catalogueData.map((recording) => recording.SAMIWebTheme).join(``);
   const keywords = catalogueData.map((recording) => recording.SAMIKeyword).join(``);
@@ -129,22 +129,14 @@ async function fetchSingle(shelfmark) {
                   let tempParameter = deviceParameter["blaph:temperature"] && deviceParameter["blaph:temperature"]._attributes !== undefined ? `Temperature: ` + deviceParameter["blaph:temperature"]._text + ` Degrees ` + deviceParameter["blaph:temperature"]._attributes.units : ``;
                   let timeParameter = deviceParameter["blaph:time"] && deviceParameter["blaph:time"]._attributes !== undefined ? ", Time: " + deviceParameter["blaph:time"]._text + ` ` + deviceParameter["blaph:time"]._attributes.units : ``;
                   let eqStandard = deviceParameter["blaph:equalisation"] && deviceParameter[`blaph:equalisation`]._attributes !== undefined ? `Replay EQ: ` + deviceParameter[`blaph:equalisation`]._attributes.standard : `Replay EQ: N/A`;
-        // if EQ turnovers exists loop them
-                  let eqTurnovers;
+                  let eqTurnovers = ``;
                   if (deviceParameter["blaph:equalisation"] && deviceParameter["blaph:equalisation"]["blaph:turnover1"] !== undefined){
-                    let eqArray = deviceParameter["blaph:equalisation"].length ? deviceParameter["blaph:equalisation"] : [deviceParameter["blaph:equalisation"]];
-                    let turnoverArray = eqArray.map((eqs) => {
-                      let eqSettings = Object.values(eqs).map((turnover, i) => {
-                        let turnoverFreq = turnover["blaph:turnover"] !== undefined && turnover["blaph:turnover"]._text !== `` && turnover["blaph:turnover"]._text !== `0` ? turnover["blaph:turnover"]._text : ``;
-                        let turnoverSlope = turnover["blaph:slope"] !== undefined && turnover["blaph:slope"]._text !== `` && turnover["blaph:slope"]._text !== `0` ? turnover["blaph:slope"]._text : ``;
-                        return ((turnoverFreq !== `` ? `EQ Turnover ` + (i+1) + ` Frequency: ` + turnoverFreq + `Hz `: ``) + (turnoverSlope !== `` ? `Slope: ` + turnoverSlope + ` dB/8ve` : ``));
-                      }).join(`, `);
-                      eqTurnovers = eqSettings;
-                      //return (eqSettings);
-                    });
-                    // return (turnoverArray);
-                  } else {
-                    eqTurnovers = ``;
+                    let eqSettings = Object.values(deviceParameter["blaph:equalisation"]).map((turnover, i) => {
+                      let turnoverFreq = turnover["blaph:turnover"] !== undefined && turnover["blaph:turnover"]._text !== `` && turnover["blaph:turnover"]._text !== `0` ? turnover["blaph:turnover"]._text : ``;
+                      let turnoverSlope = turnover["blaph:slope"] !== undefined && turnover["blaph:slope"]._text !== `` && turnover["blaph:slope"]._text !== `0` ? turnover["blaph:slope"]._text : ``;
+                      return ((turnoverFreq !== `` ? `EQ Turnover ` + (i+1) + ` Frequency: ` + turnoverFreq + `Hz `: ``) + (turnoverSlope !== `` ? `Slope: ` + turnoverSlope + ` dB/8ve` : ``));
+                    }).join(`, `);
+                    eqTurnovers = eqSettings;
                   }
                   let speedParameter = deviceParameter["blaph:replaySpeed"] && deviceParameter["blaph:replaySpeed"]._text !== undefined ? `, Replay Speed: ` + deviceParameter["blaph:replaySpeed"]._text + `cm/s` : ``;
                   let nrParameter = deviceParameter["blaph:noiseReduction"] && deviceParameter["blaph:noiseReduction"]._attributes.type !== undefined ? `, Noise Reduction: ` + deviceParameter["blaph:noiseReduction"]._attributes.type : ``;
