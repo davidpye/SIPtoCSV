@@ -1,7 +1,8 @@
 require('isomorphic-fetch');
 const convert = require('xml-js');
 const SAMISearchPath = `http://nipper.bl.uk:8080/symws/rest/standard/lookupTitleInfo?clientID=ARMADILLO&marcEntryFilter=TEMPLATE&includeItemInfo=true&titleID=`;
-const SAMISearchType = `&libraryFilter=RECORDING`;
+const SAMISearchRecording = `&libraryFilter=RECORDING`;
+const SAMISearchProduct = `&libraryFilter=PRODUCT`; 
 
 // http://nipper.bl.uk:8080/symws/rest/standard/lookupTitleInfo?clientID=ARMADILLO&marcEntryFilter=564&includeItemInfo=true&titleID=8218617&libraryFilter=PRODUCT
 // Original(s): 1 tape reel 12.5 cm 19 cm/sec mono
@@ -9,9 +10,17 @@ const SAMISearchType = `&libraryFilter=RECORDING`;
 
 
 module.exports = async (req, res) => {
+  const productID = req.query.productID;
+  const SAMIProductResponse = await fetch(SAMISearchPath + productID + SAMISearchProduct);
+  const productDataXML = await SAMIProductResponse.text();
+  const productDataJSON = convert.xml2js(productDataXML, {compact: true, spaces: 2,});
+  const productMARCEntry = productDataJSON.LookupTitleInfoResponse.TitleInfo.BibliographicInfo.MarcEntryInfo;
+  const originalFormat = productMARCEntry.filter((entry) => entry.entryID._text === "564")[0].text._text;
+  const SAMIProduct = {originalFormat};
   const recordingsIDs = req.query.ids.split(',');
+  console.log(recordingsIDs);
   const catalogueData = await Promise.all(recordingsIDs.map(async (ID) => {
-      const SAMIResponse = await fetch(SAMISearchPath + ID + SAMISearchType);
+      const SAMIResponse = await fetch(SAMISearchPath + ID + SAMISearchRecording);
       const SAMIResponseXML = await SAMIResponse.text();
       const SAMIJSON = convert.xml2js(SAMIResponseXML, {compact: true, spaces: 2,});
       const SAMIMARCEntry = SAMIJSON.LookupTitleInfoResponse.TitleInfo.BibliographicInfo.MarcEntryInfo;
@@ -43,5 +52,8 @@ module.exports = async (req, res) => {
       };
     })
   );
-  res.json(catalogueData);
+  res.json({
+    SAMIProduct,
+    catalogueData
+  });
 };

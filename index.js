@@ -65,8 +65,8 @@ async function fetchAll(shelfmarks) {
 async function fetchSingle(shelfmark) {
   const summaryResponse = await fetch(`https://avsip.ad.bl.uk/api/SearchSIPs/null/false/false/` + shelfmark); //Search for Shelfmark to acquire relevant SIP ID No.
   const summaryjson = await summaryResponse.json();
-  const id = summaryjson[0].Id;
-  const SIPResponse = await fetch(`https://avsip.ad.bl.uk/api/SIP/` + id); //Pull SIP JSON Data & Parse unformatted JSON
+  const SIPID = summaryjson[0].Id;
+  const SIPResponse = await fetch(`https://avsip.ad.bl.uk/api/SIP/` + SIPID); //Pull SIP JSON Data & Parse unformatted JSON
   const SIPjson = await SIPResponse.json();
   const ProcessMD = JSON.parse(SIPjson.ProcessMetadata);
   const ProcessMDXML = convert.xml2js(SIPjson.Submissions[0].METS, {compact: true, spaces: 2,});
@@ -75,9 +75,11 @@ async function fetchSingle(shelfmark) {
   const techMDs = processXMLBody["mets:amdSec"].filter(function (element) {return Object.keys(element).some(function (key) {return key === "mets:techMD";});});
   const LogicalMD = JSON.parse(SIPjson.LogicalStructure);
   const PhysicalMD = JSON.parse(SIPjson.PhysicalStructure);
+  const productID = SIPjson.SamiTitleId;
   const recordingsIDs = SIPjson.Recordings.map((recording) => recording.SamiId);
-  const catalogueDataResponse = await fetch(`/api/catalogueData?ids=${recordingsIDs.join(`,`)}`);
-  const catalogueData = await catalogueDataResponse.json();
+  const catalogueDataResponse = await fetch(`/api/catalogueData?ids=${recordingsIDs.join(`,`)}&productID=${productID}`);
+  const catalogueDataJSON = await catalogueDataResponse.json();
+  const {SAMIProduct, catalogueData}=catalogueDataJSON;
   const recordingDate = catalogueData.map((recording) => recording.SAMIRecDate).join(`\n`);
   const locations = catalogueData.map((recording) => recording.SAMILocation).join(`\n`);
   const languages = catalogueData.map((recording) => recording.SAMILanguage).join(`, `)
@@ -175,7 +177,6 @@ async function fetchSingle(shelfmark) {
     let filePath = digitalFilesPath + fileName;
     return filePath;
   }).join(`\n`);
-
   const csvData = {
     legacyId: "",
     parentId: "",
@@ -184,7 +185,7 @@ async function fetchSingle(shelfmark) {
     accessionNumber: "",
     title: '"' + SIPjson.SamiCallNumber + `: ` + SIPjson.SamiTitle.toString().replace(/,/g, ` `) + '"',
     levelOfDescription: "Product",
-    extentAndMedium: LogicalMD[0].children[0].files.length + ` Wave format Audio File` + (LogicalMD[0].children[0].files.length > 1 ? `s` : ``),
+    extentAndMedium: `Original(s): ` + SAMIProduct.originalFormat + `\nSurrogate(s): ` + LogicalMD[0].children[0].files.length + ` Wave format Audio File` + (LogicalMD[0].children[0].files.length > 1 ? `s` : ``),
     repository: institutionName,
     archivalHistory: "",
     acquisition: "",
