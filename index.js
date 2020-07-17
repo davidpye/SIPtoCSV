@@ -185,7 +185,7 @@ async function fetchSingle(shelfmark) {
     accessionNumber: "",
     title: '"' + SIPjson.SamiCallNumber + `: ` + SIPjson.SamiTitle.toString().replace(/,/g, ` `) + '"',
     levelOfDescription: "Product",
-    extentAndMedium: `Original(s): ` + SAMIProduct.originalFormat + `\nSurrogate(s): ` + LogicalMD[0].children[0].files.length + ` Wave format Audio File` + (LogicalMD[0].children[0].files.length > 1 ? `s` : ``),
+    extentAndMedium: '"' + `Original(s): ` + SAMIProduct.originalFormat + `\nSurrogate(s): ` + LogicalMD[0].children[0].files.length + ` Wave format Audio File` + (LogicalMD[0].children[0].files.length > 1 ? `s` : ``) + '"',
     repository: institutionName,
     archivalHistory: "",
     acquisition: "",
