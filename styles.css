@@ -9,6 +9,7 @@ h1 {
   font-family: "Jost", sans-serif;
   width: 70%;
   text-align: left;
+  /*margin-bottom: 0px;*/
 }
 h2 {
   font-family: "Jost", sans-serif;
@@ -19,6 +20,14 @@ p {
   font-family: "Jost", sans-serif;
   width: 70%;
   text-align: left;
+}
+a{
+  text-decoration: none;
+}
+#help{
+  text-align: right;
+  width: 70%;
+  margin-top: -20px;
 }
 body {
   font-family: "Jost", sans-serif;

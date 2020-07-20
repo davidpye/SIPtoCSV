@@ -13,11 +13,38 @@
   </head>
   <body>
       <h1>SIP API CSV Exporter - Help</h1>
+      
       <h2>What is this Application for?</h2>
-      <p>This Application allows Hub Partners on the Unlocking Out Sound Heritage project to access the data they submitted to the British Library, by collecting the data from the BL's web APIs and converting it into standard CSV, using the Dublin Core archival format.</p>
-      <p>An API is simply a way for one web-based application to speak to another. Allowing this application to collect the data for you, and automating the conversion process.</p>
+      <p>This Application allows Hub Partners on the Unlocking Our Sound Heritage project to access the data they submitted to the British Library via the SIP tool, by collecting the data from the BL's web APIs and converting it into standard CSV format. 
+          (An API is a way for one web-based application to speak to another. Allowing this application to collect the data for you, and automate the conversion process.)</p>
+      
       <h2>How to use this Application:</h2>
-      <p>First of all you must make sure you are on a computer which has access to the BL's VPN for the USOSH project. If you are not connected this application will not work.</p>
-      <p>Once connected to the VPN, also make sure you are logged into the SIP tool by visiting https://avsip.ad.bl.uk/ and inputting your user credentials.</p>
+      <p>
+        First, make sure you are using a computer which has access to the BL's VPN for the USOSH project.<br />
+        If you are not connected to the VPN, <b>this application will not work.</b></p>
+      <p>
+        Once connected to the VPN, also make sure you are logged into the SIP tool by visiting <a href="https://avsip.ad.bl.uk/" target="_blank">https://avsip.ad.bl.uk/</a> 
+        and inputting your user credentials. Once logged in, you can close the SIP tool and start to request your data using this Application.</p>
+      <p>
+        Start by enterring a few Shelfmarks into the text box at the top of the page. You can copy and paste a list of Shelfmarks from your tracking spreadsheets. 
+        They can be comma, space, or new line separated, but must match the Shelfmarks stored on the SIP tool perfectly.<br />
+        Click the Submit button at the bottom of the page to collect the data.
+      </p>
+      <p>
+        The app works by running searches for the Shelfmarks on the SIP tool to access their SIP ID numbers, which it will then use to access the Recording/Logical and Process Metadata.
+        It will also grab the SAMI IDs, and run a separate pair of searches on SAMI to access the Cataloguing Metadata at both the Product, and Recording level.
+        All this Data is then combined into a CSV file which will automatically download onto your PC when the process is finished.
+      </p>
+      <p>
+        You will notice a few text boxes for inputting additional information, these are mostly prefixes, and aren't required to run the Application.<br />
+        The data generated is designed to be imported into <a href="https://www.accesstomemory.org/en/">AtoM</a> Archival Management software, and so these prefixes are aimed to aid the import process.<br />
+        More information on the CSV import process can be found <a href="https://www.accesstomemory.org/en/docs/2.7/user-manual/import-export/csv-import/#csv-import" target="_blank">here</a>.
+      </p>
+      <p>
+        <b>Please note:</b><br />
+        Currently there are some minor whitespacing issues with the generated CSV file, which make the files display incorrectly if first opened in Microsoft Excel, and will cause errors when importing directly into AtoM.<br />
+        To get around this issue, first open the CSV in Google Drive, where the whitespacing is (for some reason) parsed correctly, then export a CSV from there. This will also give you a chance to check over the structure of the data 
+        and bulk fill any additional data you may wish to store.
+      </p>
   </body>
 </html>
