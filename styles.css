@@ -10,6 +10,16 @@ h1 {
   width: 70%;
   text-align: left;
 }
+h2 {
+  font-family: "Jost", sans-serif;
+  width: 70%;
+  text-align: left;
+}
+p {
+  font-family: "Jost", sans-serif;
+  width: 70%;
+  text-align: left;
+}
 body {
   font-family: "Jost", sans-serif;
   color: #465775;
