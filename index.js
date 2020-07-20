@@ -7,8 +7,7 @@ let identifierPrefix = "";
 let institutionName = "";
 let digitalFilesPath = "";
 
-// Pull EQ Settings for post-migration EQ process
-// Request SIP including Pre-amp EQ settings
+//Create Logging System for Shelfmarks Searched and the Times Searches are made
 
 function handleLoading() {
   spinner.style.display = "block";
@@ -30,8 +29,7 @@ function parseInputs() {
   identifierPrefix = document.getElementById("identifierPrefix").value;
   institutionName = document.getElementById("repository").value;
   digitalFilesPath = document.getElementById("digitalObjectURI").value;
-  fetchAll(inputShelfmarks, parentSlug, identifierPrefix, institutionName, digitalFilesPath
-  );
+  fetchAll(inputShelfmarks, parentSlug, identifierPrefix, institutionName, digitalFilesPath);
 }
 
 async function fetchAll(shelfmarks) {
@@ -59,6 +57,16 @@ async function fetchAll(shelfmarks) {
   element.download = new Date().toISOString() + ".csv";
   document.body.appendChild(element);
   element.click();
+  let logData = {
+    date: new Date(),
+    shelfmarks: shelfmarks,
+    parentSlug: parentSlug, 
+    identifier: identifierPrefix, 
+    institution: institutionName, 
+    path: digitalFilesPath,
+    errors: rejectedArray.length
+  };
+  console.log(logData);
   handleCompleted();
 }
 
