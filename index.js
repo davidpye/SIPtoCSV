@@ -66,8 +66,18 @@ async function fetchAll(shelfmarks) {
     path: digitalFilesPath,
     errors: rejectedArray.length
   };
-  console.log(logData);
   handleCompleted();
+}
+
+function arrayUnique(array) {
+  var a = array.concat();
+  for(var i=0; i<a.length; ++i) {
+    for(var j=i+1; j<a.length; ++j) {
+      if(a[i] === a[j])
+        a.splice(j--, 1);
+    }
+  }
+  return a;
 }
 
 async function fetchSingle(shelfmark) {
@@ -82,6 +92,7 @@ async function fetchSingle(shelfmark) {
   const processXMLRights = processXMLBody["mets:amdSec"][0]["mets:rightsMD"]["mets:mdWrap"]["mets:xmlData"]["odrl:policy"];
   const techMDs = processXMLBody["mets:amdSec"].filter(function (element) {return Object.keys(element).some(function (key) {return key === "mets:techMD";});});
   const LogicalMD = JSON.parse(SIPjson.LogicalStructure);
+  console.log (`LogicalMD: `, LogicalMD);
   const PhysicalMD = JSON.parse(SIPjson.PhysicalStructure);
   const productID = SIPjson.SamiTitleId;
   const recordingsIDs = SIPjson.Recordings.map((recording) => recording.SamiId);
@@ -97,17 +108,48 @@ async function fetchSingle(shelfmark) {
   const documentation = catalogueData.map((recording) => recording.SAMIDocumentation).join(`\n`);
   const subjects = catalogueData.map((recording) => recording.SAMISubject).join(``);
   const locOriginals = catalogueData.map((recording) => recording.SAMILocOriginals).join(`\n`);
-  const recordingsData = LogicalMD[0].children.map(function (child, i) {
-      let recordingName = child.text;
-      let fileInfo = child.files.map(function (file) {
-          let fileName = file.text;
-          let fileStart = file.ranges[0].startH + ":" + file.ranges[0].startM + ":" + file.ranges[0].startS + ":" + file.ranges[0].startF;
-          let fileEnd = file.ranges[0].endH + ":" + file.ranges[0].endM + ":" + file.ranges[0].endS + ":" + file.ranges[0].endF;
-          return `Filename and Duration: ` + fileName + "\nStart: " + fileStart + " End: " + fileEnd;
-        }).join("\n");
-      return (recordingName + "\n" + `Description: ` + catalogueData[i].SAMIDescription.replace(/"/g, ``) + `\n` + `Recording Location: ` + catalogueData[i].SAMILocation + `\n` + `Contributors: ` + catalogueData[i].SAMIContributor + `\n` + fileInfo
-      );
+  
+  const recordingsData = LogicalMD[0].children.map(function (parent) {
+    let parentRecordingName = parent.text;
+    let childRecordingNames = parent.childRecordings.map(function (child) {
+      return child.text;
+    });
+    let allFileInfo = parent.files.map(function (file) {
+      let fileName = file.text;
+      let fileStart = file.ranges[0].startH + ":" + file.ranges[0].startM + ":" + file.ranges[0].startS + ":" + file.ranges[0].startF;
+      let fileEnd = file.ranges[0].endH + ":" + file.ranges[0].endM + ":" + file.ranges[0].endS + ":" + file.ranges[0].endF;
+      let childRangeInfo = file.ranges[0].ranges.map(function (childRange, i){
+        let childFileStart = childRange.startH + ":" + childRange.startM + ":" + childRange.startS + ":" + childRange.startF;
+        let childFileEnd = childRange.endH + ":" + childRange.endM + ":" + childRange.endS + ":" + childRange.endF;
+        return "Start: " + childFileStart + " End: " + childFileEnd;
+      })
+      let parentRangeInfo = "Filename: " + fileName + " Start: " + fileStart + " End: " + fileEnd;
+      return [parentRangeInfo, ...childRangeInfo];
+    });
+    let allRecordingNames = [parentRecordingName, ...childRecordingNames];
+    let combinedRecordingsData = allRecordingNames.map((name, i) => {
+      return name + "\n" + 
+        (catalogueData[i].SAMIDescription !== undefined ? `Description: ` + catalogueData[i].SAMIDescription.replace(/"/g, ``) :``) +
+        (catalogueData[i].SAMILocation !== undefined ? `Recording Location: ` + catalogueData[i].SAMILocation + `\n` : ``) +
+        (catalogueData[i].SAMIContributor !== undefined ? `Contributors: ` + catalogueData[i].SAMIContributor + `\n` : ``) +
+        allFileInfo[0][i];
     }).join(`\n\n`);
+    return combinedRecordingsData;
+  }).join(`\n\n`);
+
+
+  //console.log (recordingsData);
+  // const recordingsData = LogicalMD[0].children.map(function (child, i) {
+  //     let recordingName = child.text;
+  //     let fileInfo = child.files.map(function (file) {
+  //         let fileName = file.text;
+  //         let fileStart = file.ranges[0].startH + ":" + file.ranges[0].startM + ":" + file.ranges[0].startS + ":" + file.ranges[0].startF;
+  //         let fileEnd = file.ranges[0].endH + ":" + file.ranges[0].endM + ":" + file.ranges[0].endS + ":" + file.ranges[0].endF;
+  //         return `Filename and Duration: ` + fileName + "\nStart: " + fileStart + " End: " + fileEnd;
+  //       }).join("\n");
+  //     return (recordingName + "\n" + `Description: ` + catalogueData[i].SAMIDescription.replace(/"/g, ``) + `\n` + `Recording Location: ` + catalogueData[i].SAMILocation + `\n` + `Contributors: ` + catalogueData[i].SAMIContributor + `\n` + fileInfo
+  //     );
+  //   }).join(`\n\n`);
   const transferData = techMDs.map(function (transferFile) {
       let transferFilename = transferFile["mets:techMD"][0]["mets:mdWrap"]["mets:xmlData"]["mediaMD:mediaMD"]["mediaMD:fileData"]["mediaMD:fileName"]._text;
       let transferFormat = transferFile["mets:techMD"][0]["mets:mdWrap"]["mets:xmlData"]["mediaMD:mediaMD"]["mediaMD:fileData"]["mediaMD:format"]._text;
