@@ -51,21 +51,21 @@ async function fetchAll(shelfmarks) {
     handleCompleted();
     alert(`WARNING: ` + rejectedArray.length + (rejectedArray.length > 1 ? ` shelfmarks` : ` shelfmark`) + ` produced errors and` + (rejectedArray.length > 1 ? ` weren't` : ` wasn't`) + ` accessible.`);
   }
-  const element = document.createElement("a"); // Create CSV File from data and download
-  const file = new Blob([csvOutput], { type: "text/plain" });
-  element.href = URL.createObjectURL(file);
-  element.download = new Date().toISOString() + ".csv";
-  document.body.appendChild(element);
-  element.click();
-  let logData = {
-    date: new Date(),
-    shelfmarks: shelfmarks,
-    parentSlug: parentSlug, 
-    identifier: identifierPrefix, 
-    institution: institutionName, 
-    path: digitalFilesPath,
-    errors: rejectedArray.length
-  };
+  // const element = document.createElement("a"); // Create CSV File from data and download
+  // const file = new Blob([csvOutput], { type: "text/plain" });
+  // element.href = URL.createObjectURL(file);
+  // element.download = new Date().toISOString() + ".csv";
+  // document.body.appendChild(element);
+  // element.click();
+  // let logData = {
+  //   date: new Date(),
+  //   shelfmarks: shelfmarks,
+  //   parentSlug: parentSlug, 
+  //   identifier: identifierPrefix, 
+  //   institution: institutionName, 
+  //   path: digitalFilesPath,
+  //   errors: rejectedArray.length
+  // };
   handleCompleted();
 }
 
@@ -126,6 +126,8 @@ async function fetchSingle(shelfmark) {
       let parentRangeInfo = "Filename: " + fileName + " Start: " + fileStart + " End: " + fileEnd;
       return [parentRangeInfo, ...childRangeInfo];
     });
+    console.log(allFileInfo);
+    console.log(...allFileInfo);
     let allRecordingNames = [parentRecordingName, ...childRecordingNames];
     let combinedRecordingsData = allRecordingNames.map((name, i) => {
       return name + "\n" + 
