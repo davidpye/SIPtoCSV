@@ -97,7 +97,7 @@ async function fetchSingle(shelfmark) {
   const genres = dedupeArray(catalogueData.map((recording) => recording.SAMIGenre)).join(`\n`);
   const themes = dedupeArray(catalogueData.map((recording) => recording.SAMIWebTheme)).join(``);
   const keywords = dedupeArray(catalogueData.map((recording) => recording.SAMIKeyword)).join(``);
-  const documentation = catalogueData.map((recording) => recording.SAMIDocumentation).join(`\n`);
+  const documentation = dedupeArray(catalogueData.map((recording) => recording.SAMIDocumentation)).join(`\n`);
   const subjects = dedupeArray(catalogueData.map((recording) => recording.SAMISubject)).join(``);
   const locOriginals = dedupeArray(catalogueData.map((recording) => recording.SAMILocOriginals)).join(`\n`);
   const recordingsData = LogicalMD[0].children.map(function (parent) {
