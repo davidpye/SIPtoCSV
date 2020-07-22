@@ -92,17 +92,17 @@ async function fetchSingle(shelfmark) {
   const catalogueDataResponse = await fetch(`/api/catalogueData?ids=${recordingsIDs.join(`,`)}&productID=${productID}`);
   const catalogueDataJSON = await catalogueDataResponse.json();
   const {SAMIProduct, catalogueData}=catalogueDataJSON;
-  const recordingDate = catalogueData.map((recording) => recording.SAMIRecDate).join(`\n`);
-  const locations = catalogueData.map((recording) => recording.SAMILocation).join(`\n`);
-  const languages = catalogueData.map((recording) => recording.SAMILanguage).join(`, `)
-  const genres = catalogueData.map((recording) => recording.SAMIGenre).join(`\n`);
-  const themes = catalogueData.map((recording) => recording.SAMIWebTheme).join(``);
-  const keywords = catalogueData.map((recording) => recording.SAMIKeyword).join(``);
+  const recordingDate = dedupeArray(catalogueData.map((recording) => recording.SAMIRecDate)).join(`\n`);
+  const locations = dedupeArray(catalogueData.map((recording) => recording.SAMILocation)).join(`\n`);
+  const languages = dedupeArray(catalogueData.map((recording) => recording.SAMILanguage)).join(`, `)
+  const genres = dedupeArray(catalogueData.map((recording) => recording.SAMIGenre)).join(`\n`);
+  const themes = dedupeArray(catalogueData.map((recording) => recording.SAMIWebTheme)).join(``);
+  const keywords = dedupeArray(catalogueData.map((recording) => recording.SAMIKeyword)).join(``);
   const documentation = catalogueData.map((recording) => recording.SAMIDocumentation).join(`\n`);
-  const subjects = catalogueData.map((recording) => recording.SAMISubject).join(``);
+  const subjects = dedupeArray(catalogueData.map((recording) => recording.SAMISubject)).join(``);
   const locOriginals = dedupeArray(catalogueData.map((recording) => recording.SAMILocOriginals)).join(`\n`);
+
   const recordingsData = LogicalMD[0].children.map(function (parent) {
-    console.log(parent);
     let parentRecordingName = parent.text;
     let childRecordingNames = parent.childRecordings.map(function (child) {
       return child.text;
