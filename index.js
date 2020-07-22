@@ -239,7 +239,7 @@ async function fetchSingle(shelfmark) {
     publicationNote: "",
     digitalObjectURI: '"' + createdFilePaths + '"',
     generalNote: "",
-    subjectAccessPoints: '"' + (subjects !== `` ? subjects + ` | ` : ``) + (keywords !==`` ? keywords + ` | ` : ``) + (themes !==`` ? themes + ` | ` : ``) + '"',
+    subjectAccessPoints: '"' + (subjects !== `` && subjects !== ` ` ? subjects : ``) + (keywords !==`` && keywords !==` ` ? ` | ` : ``) + (keywords !==`` && keywords !==` ` ? keywords : ``) + (themes !==`` && themes !==` ` ? ` | ` : ``) + (themes !==`` && themes !== ` ` ? themes : ``) + '"',
     placeAccessPoints: '"' + locations + '"',
     nameAccessPoints: "",
     genreAccessPoints: '"' + genres + '"',
