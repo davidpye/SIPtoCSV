@@ -9,6 +9,10 @@ let digitalFilesPath = "";
 
 //Create Logging System for Shelfmarks Searched and the Times Searches are made
 
+function dedupeArray(array) {
+  return [...new Set(array)]
+}
+
 function handleLoading() {
   spinner.style.display = "block";
   submit.style.color = "#f4f3ee52";
@@ -29,7 +33,7 @@ function parseInputs() {
   identifierPrefix = document.getElementById("identifierPrefix").value;
   institutionName = document.getElementById("repository").value;
   digitalFilesPath = document.getElementById("digitalObjectURI").value;
-  fetchAll(inputShelfmarks, parentSlug, identifierPrefix, institutionName, digitalFilesPath);
+  fetchAll(dedupeArray(inputShelfmarks), parentSlug, identifierPrefix, institutionName, digitalFilesPath);
 }
 
 async function fetchAll(shelfmarks) {
@@ -69,10 +73,6 @@ async function fetchAll(shelfmarks) {
   handleCompleted();
 }
 
-function dedupeArray(array) {
-  return [...new Set(array)]
-}
-
 async function fetchSingle(shelfmark) {
   const summaryResponse = await fetch(`https://avsip.ad.bl.uk/api/SearchSIPs/null/false/false/` + shelfmark); //Search for Shelfmark to acquire relevant SIP ID No.
   const summaryjson = await summaryResponse.json();
@@ -85,7 +85,6 @@ async function fetchSingle(shelfmark) {
   const processXMLRights = processXMLBody["mets:amdSec"][0]["mets:rightsMD"]["mets:mdWrap"]["mets:xmlData"]["odrl:policy"];
   const techMDs = processXMLBody["mets:amdSec"].filter(function (element) {return Object.keys(element).some(function (key) {return key === "mets:techMD";});});
   const LogicalMD = JSON.parse(SIPjson.LogicalStructure);
-  //console.log (`LogicalMD: `, LogicalMD);
   const PhysicalMD = JSON.parse(SIPjson.PhysicalStructure);
   const productID = SIPjson.SamiTitleId;
   const recordingsIDs = SIPjson.Recordings.map((recording) => recording.SamiId);
@@ -101,7 +100,6 @@ async function fetchSingle(shelfmark) {
   const documentation = catalogueData.map((recording) => recording.SAMIDocumentation).join(`\n`);
   const subjects = dedupeArray(catalogueData.map((recording) => recording.SAMISubject)).join(``);
   const locOriginals = dedupeArray(catalogueData.map((recording) => recording.SAMILocOriginals)).join(`\n`);
-
   const recordingsData = LogicalMD[0].children.map(function (parent) {
     let parentRecordingName = parent.text;
     let childRecordingNames = parent.childRecordings.map(function (child) {
@@ -132,7 +130,6 @@ async function fetchSingle(shelfmark) {
     }).join(`\n\n`);
     return combinedRecordingsData;
   }).join(`\n\n`);
-
   const transferData = techMDs.map(function (transferFile) {
       let transferFilename = transferFile["mets:techMD"][0]["mets:mdWrap"]["mets:xmlData"]["mediaMD:mediaMD"]["mediaMD:fileData"]["mediaMD:fileName"]._text;
       let transferFormat = transferFile["mets:techMD"][0]["mets:mdWrap"]["mets:xmlData"]["mediaMD:mediaMD"]["mediaMD:fileData"]["mediaMD:format"]._text;
