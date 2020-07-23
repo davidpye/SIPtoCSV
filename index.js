@@ -13,6 +13,10 @@ function dedupeArray(array) {
   return [...new Set(array)]
 }
 
+function addLog(logData){
+  fetch(`/api/doMyLogging?log=${logData}`);
+};
+
 function handleLoading() {
   spinner.style.display = "block";
   submit.style.color = "#f4f3ee52";
@@ -68,8 +72,9 @@ async function fetchAll(shelfmarks) {
     identifier: identifierPrefix, 
     institution: institutionName, 
     path: digitalFilesPath,
-    errors: rejectedArray.length
+    errors: rejectedArray
   };
+  addLog(logData);
   handleCompleted();
 }
 

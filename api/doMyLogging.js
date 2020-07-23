@@ -26,19 +26,8 @@ async function connectToDatabase(uri) {
 }
 
 module.exports = async (req, res) => {
+  console.log(req.query.log);
   const db = await connectToDatabase(process.env.MONGODB_URI);
-
-  const collection = await db.collection("timeblocks");
-
-  const timeblocks = await collection
-    .find({
-      "mix.coal": { $gt: 0 },
-    })
-    .sort({
-      to: -1,
-    })
-    .limit(1)
-    .toArray();
-
-  res.status(200).json(timeblocks[0]);
+  //const db = await connectToDatabase(`mongodb+srv://siptocsvlogging:<bYiorMh3s8ersmWx>@sip-to-csv-log.dbpn9.gcp.mongodb.net/<SIP-to-CSV-Log>?retryWrites=true&w=majority`);
+  res(`Logged: `, req);
 };
