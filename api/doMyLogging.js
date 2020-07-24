@@ -26,8 +26,16 @@ async function connectToDatabase(uri) {
 }
 
 module.exports = async (req, res) => {
-  console.log(req.query.log);
+  console.log(req.method);
+  console.log(req.body);
+  
   const db = await connectToDatabase(process.env.MONGODB_URI);
-  //const db = await connectToDatabase(`mongodb+srv://siptocsvlogging:<bYiorMh3s8ersmWx>@sip-to-csv-log.dbpn9.gcp.mongodb.net/<SIP-to-CSV-Log>?retryWrites=true&w=majority`);
-  res(`Logged: `, req);
+  const logs = await db.collection("logs");
+
+  logs.insertOne({
+    ...req.body,
+    date: new Date()
+  })
+
+  res.json({ message: 'did some logging'  });
 };

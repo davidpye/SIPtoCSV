@@ -13,8 +13,19 @@ function dedupeArray(array) {
   return [...new Set(array)]
 }
 
-function addLog(logData){
-  fetch(`/api/doMyLogging?log=${logData}`);
+async function addLog(logData){
+  const response = await fetch(`/api/doMyLogging`, {
+    method: 'POST',
+    body: JSON.stringify(logData),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+
+  const json = await response.json()
+
+  console.log(json)
+  
 };
 
 function handleLoading() {
@@ -66,7 +77,6 @@ async function fetchAll(shelfmarks) {
   document.body.appendChild(element);
   element.click();
   let logData = {
-    date: new Date(),
     shelfmarks: shelfmarks,
     parentSlug: parentSlug, 
     identifier: identifierPrefix, 
