@@ -21,11 +21,6 @@ async function addLog(logData){
       'Content-Type': 'application/json'
     }
   });
-
-  const json = await response.json()
-
-  console.log(json)
-  
 };
 
 function handleLoading() {
@@ -53,7 +48,6 @@ function parseInputs() {
 
 async function fetchAll(shelfmarks) {
   const fetchArray = await Promise.allSettled(shelfmarks.map((element) => fetchSingle(element + ",")));
-  console.log(fetchArray);
   const fulfilledArray = fetchArray.filter((item) => item.status === "fulfilled");
   const rejectedArray = fetchArray.filter((item) => item.status === "rejected");
   console.log(`Fulfilled: ` + fulfilledArray.length);
@@ -67,6 +61,7 @@ async function fetchAll(shelfmarks) {
   const csvValues = fetchArrayValues.map(function (data) {return Object.values(data).join(", ");}); //CSV Row
   const csvOutput = [csvKeys, ...csvValues].join("\n");
   if (rejectedArray.length !== 0) {
+    console.log(fetchArray);
     handleCompleted();
     alert(`WARNING: ` + rejectedArray.length + (rejectedArray.length > 1 ? ` shelfmarks` : ` shelfmark`) + ` produced errors and` + (rejectedArray.length > 1 ? ` weren't` : ` wasn't`) + ` accessible.`);
   }
