@@ -91,6 +91,7 @@ async function fetchSingle(shelfmark) {
   const SIPResponse = await fetch(`https://avsip.ad.bl.uk/api/SIP/` + SIPID); //Pull SIP JSON Data & Parse unformatted JSON
   const SIPjson = await SIPResponse.json();
   const ProcessMD = JSON.parse(SIPjson.ProcessMetadata);
+  console.log(SIPjson.PhysicalStructure);
 //  const PhysicalMD = JSON.parse(SIPjson.PhysicalStructure);
   const LogicalMD = JSON.parse(SIPjson.LogicalStructure);
   const productID = SIPjson.SamiTitleId;
