@@ -69,7 +69,6 @@ async function fetchAll(shelfmarks) {
     return;
   }
   const fetchArrayValues = fulfilledArray.map((x) => x.value);
-  console.log(`Fetch Array Values looks like: `, fetchArrayValues);
   const csvKeys = Object.keys(fetchArrayValues[0]).join(", "); //CSV Header
   const csvValues = fetchArrayValues.map(function (data) {return Object.values(data).join(", ");}); //CSV Row
   const csvOutput = [csvKeys, ...csvValues].join("\n");
