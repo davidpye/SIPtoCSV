@@ -94,7 +94,6 @@ async function fetchSingle(shelfmark) {
   const SIPResponse = await fetch(`https://avsip.ad.bl.uk/api/SIP/` + SIPID); //Pull SIP JSON Data & Parse unformatted JSON
   const SIPjson = await SIPResponse.json();
   const ProcessMD = JSON.parse(SIPjson.ProcessMetadata);
-  console.log(ProcessMD);
   // const PhysicalMD = JSON.parse(SIPjson.PhysicalStructure);
   const LogicalMD = JSON.parse(SIPjson.LogicalStructure);
   const productID = SIPjson.SamiTitleId;
@@ -141,16 +140,13 @@ async function fetchSingle(shelfmark) {
     }).join(`\n\n`);
     return combinedRecordingsData;
   }).join(`\n\n`);
-  //if ^^ null, Record is probably born digital, fill all process meta with blanks, continue to pull cataloguing data.
   const ProcessMDXML = convert.xml2js(SIPjson.Submissions[0].METS, {compact: true, spaces: 2,});
   const processXMLBody = ProcessMDXML["mets:mets"];
-  console.log(processXMLBody);
-  const processXMLRights = processXMLBody["mets:amdSec"][0]["mets:rightsMD"]["mets:mdWrap"]["mets:xmlData"]["odrl:policy"] || '';
-  console.log(processXMLRights);
+  const processXMLRights = processXMLBody["mets:amdSec"][0]["mets:rightsMD"]["mets:mdWrap"]["mets:xmlData"]["odrl:policy"];
   let techMDs;
   let transferData;
   if (ProcessMD === null){
-    transferData = `No Transfer Metadata found; Product was born digital, see Original Format for more information.`;
+    transferData = `No Transfer Metadata found - Product was born digital, see Original Format for more information.`;
   } else {
     techMDs = processXMLBody["mets:amdSec"].filter(function (element) {return Object.keys(element).some(function (key) {return key === "mets:techMD";});});
     transferData = techMDs.map(function (transferFile) {
@@ -288,8 +284,6 @@ async function fetchSingle(shelfmark) {
     eventActorHistories: "",
     culture: "",
   };
-
-  console.log(csvData);
 
   return csvData;
 }
