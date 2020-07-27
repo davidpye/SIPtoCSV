@@ -47,11 +47,20 @@ function parseInputs() {
 }
 
 async function fetchAll(shelfmarks) {
-  const fetchArray = await Promise.allSettled(shelfmarks.map((element) => fetchSingle(element + ",")));
+  const fetchArray = await Promise.allSettled(shelfmarks.map((element) => fetchSingle(element + ",").catch(err => console.error(err))));
   const fulfilledArray = fetchArray.filter((item) => item.status === "fulfilled");
   const rejectedArray = fetchArray.filter((item) => item.status === "rejected");
   console.log(`Fulfilled: ` + fulfilledArray.length);
   console.log(`Rejected: ` + rejectedArray.length);
+  let logData = {
+    shelfmarks: shelfmarks,
+    parentSlug: parentSlug, 
+    identifier: identifierPrefix, 
+    institution: institutionName, 
+    path: digitalFilesPath,
+    errors: rejectedArray
+  };
+  addLog(logData);
   if (fulfilledArray.length === 0) {
     handleCompleted();
     alert(`WARNING: ` + rejectedArray.length + (rejectedArray.length > 1 ? ` shelfmarks` : ` shelfmark`) + ` produced errors and` + (rejectedArray.length > 1 ? ` weren't` : ` wasn't`) + ` accessible. \n Please check your connection to the SIP Tool.`);
@@ -72,15 +81,7 @@ async function fetchAll(shelfmarks) {
   element.download = new Date().toISOString() + ".csv";
   document.body.appendChild(element);
   element.click();
-  let logData = {
-    shelfmarks: shelfmarks,
-    parentSlug: parentSlug, 
-    identifier: identifierPrefix, 
-    institution: institutionName, 
-    path: digitalFilesPath,
-    errors: rejectedArray
-  };
-  addLog(logData);
+  
   handleCompleted();
 }
 
@@ -91,8 +92,8 @@ async function fetchSingle(shelfmark) {
   const SIPResponse = await fetch(`https://avsip.ad.bl.uk/api/SIP/` + SIPID); //Pull SIP JSON Data & Parse unformatted JSON
   const SIPjson = await SIPResponse.json();
   const ProcessMD = JSON.parse(SIPjson.ProcessMetadata);
-  console.log(SIPjson.PhysicalStructure);
-//  const PhysicalMD = JSON.parse(SIPjson.PhysicalStructure);
+  console.log(ProcessMD);
+  // const PhysicalMD = JSON.parse(SIPjson.PhysicalStructure);
   const LogicalMD = JSON.parse(SIPjson.LogicalStructure);
   const productID = SIPjson.SamiTitleId;
   const recordingsIDs = SIPjson.Recordings.map((recording) => recording.SamiId);
@@ -141,11 +142,13 @@ async function fetchSingle(shelfmark) {
   //if ^^ null, Record is probably born digital, fill all process meta with blanks, continue to pull cataloguing data.
   const ProcessMDXML = convert.xml2js(SIPjson.Submissions[0].METS, {compact: true, spaces: 2,});
   const processXMLBody = ProcessMDXML["mets:mets"];
-  const processXMLRights = processXMLBody["mets:amdSec"][0]["mets:rightsMD"]["mets:mdWrap"]["mets:xmlData"]["odrl:policy"];
+  console.log(processXMLBody);
+  const processXMLRights = processXMLBody["mets:amdSec"][0]["mets:rightsMD"]["mets:mdWrap"]["mets:xmlData"]["odrl:policy"] || '';
+  console.log(processXMLRights);
   let techMDs;
   let transferData;
   if (ProcessMD === null){
-    transferData = `No Transfer Metadata found product was born digital, see Original Format for more information.`;
+    transferData = `No Transfer Metadata found; Product was born digital, see Original Format for more information.`;
   } else {
     techMDs = processXMLBody["mets:amdSec"].filter(function (element) {return Object.keys(element).some(function (key) {return key === "mets:techMD";});});
     transferData = techMDs.map(function (transferFile) {
@@ -221,7 +224,6 @@ async function fetchSingle(shelfmark) {
         return (transferFilename + `\n` + `Format: ` + transferFormat + ` ` + transferBitdepth + `Bit ` + transferSamplerate + `Hz ` + (transferChannels > 1 ? transferChannels + ` Channel` + `s` : transferChannels + ` Channel`) + `\n` + transferProcesses);
       }).join(`\n`);
   }
-
   const createdFilePaths = SIPjson.Files.map(function (file) {
     let fileName = file.Name;
     let filePath = digitalFilesPath + fileName;
@@ -244,7 +246,7 @@ async function fetchSingle(shelfmark) {
     accruals: "",
     arrangement: "",
     accessConditions: "",
-    reproductionConditions: '"' + `Rights Attribution: ` + processXMLRights["dc:rights"]._text + `\nRights Contributor: ` + processXMLRights["dc:contributor"]._text + `\nRights Provenance: ` + processXMLRights["dc:provenance"]._text + '"',
+    reproductionConditions: '"' + (processXMLRights["dc:rights"] !== undefined ? `Rights Attribution: ` + processXMLRights["dc:rights"]._text : ``) + (processXMLRights["dc:contributor"] !== undefined ? `\nRights Contributor: ` + processXMLRights["dc:contributor"]._text : ``) + (processXMLRights["dc:provenance"] !== undefined ? `\nRights Provenance: ` + processXMLRights["dc:provenance"]._text : ``)  + '"',
     language: "",
     script: "",
     languageNote: '"' + `Language of Material: ` + languages + '"',
@@ -284,5 +286,8 @@ async function fetchSingle(shelfmark) {
     eventActorHistories: "",
     culture: "",
   };
+
+  console.log(csvData);
+
   return csvData;
 }

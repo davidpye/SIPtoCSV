@@ -14,8 +14,7 @@
     "mongodb": "^3.5.9",
     "parcel-bundler": "^1.12.4",
     "url": "^0.11.0",
-    "xml-js": "^1.6.11",
-    "yarn": "^1.22.4"
+    "xml-js": "^1.6.11"
   },
   "browserslist": [
     "last 1 Chrome versions"
