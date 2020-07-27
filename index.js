@@ -52,18 +52,21 @@ async function fetchAll(shelfmarks) {
   const rejectedArray = fetchArray.filter((item) => item.status === "rejected");
   console.log(`Fulfilled: ` + fulfilledArray.length);
   console.log(`Rejected: ` + rejectedArray.length);
+  const errors = rejectedArray.map(x => x.reason);
+  console.log(errors);
   let logData = {
     shelfmarks: shelfmarks,
     parentSlug: parentSlug, 
     identifier: identifierPrefix, 
     institution: institutionName, 
     path: digitalFilesPath,
-    errors: rejectedArray
+    errors: errors
   };
   addLog(logData);
   if (fulfilledArray.length === 0) {
     handleCompleted();
     alert(`WARNING: ` + rejectedArray.length + (rejectedArray.length > 1 ? ` shelfmarks` : ` shelfmark`) + ` produced errors and` + (rejectedArray.length > 1 ? ` weren't` : ` wasn't`) + ` accessible. \n Please check your connection to the SIP Tool.`);
+    return;
   }
   const fetchArrayValues = fulfilledArray.map((x) => x.value);
   console.log(`Fetch Array Values looks like: `, fetchArrayValues);
@@ -80,8 +83,7 @@ async function fetchAll(shelfmarks) {
   element.href = URL.createObjectURL(file);
   element.download = new Date().toISOString() + ".csv";
   document.body.appendChild(element);
-  element.click();
-  
+  element.click(); 
   handleCompleted();
 }
 
