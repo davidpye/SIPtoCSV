@@ -28,15 +28,15 @@ module.exports = async (req, res) => {
       const SAMIDescription = SAMIMARCEntry.filter((entry) => entry.entryID._text === "506").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "506").map((description) => description.text._text).join(" | ") : '';
       const SAMIContributor = SAMIMARCEntry.filter((entry) => entry.entryID._text === "702").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "702").map((contributor) => contributor.text._text).join(" | ") : '';
       const SAMIRecDate = SAMIMARCEntry.filter((entry) => entry.entryID._text === "260").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "260").map((recdate) => recdate.text._text).join(" | ") : '';
-      const SAMILocation = SAMIMARCEntry.filter((entry) => entry.entryID._text === "551").length SAMIMARCEntry.filter((entry) => entry.entryID._text === "551").map((location) => location.text._text).join(" | ") : '';
-      const SAMILanguage = SAMIMARCEntry.filter((entry) => entry.entryID._text === "041").length SAMIMARCEntry.filter((entry) => entry.entryID._text === "041").map((language) => language.text._text).join(" | ") : '';
-      const SAMIGenre = SAMIMARCEntry.filter((entry) => entry.entryID._text === "633").length SAMIMARCEntry.filter((entry) => entry.entryID._text === "633").map((genre) => genre.text._text).join(" | ") : '';
-      const SAMIWebTheme = SAMIMARCEntry.filter((entry) => entry.entryID._text === "634").length SAMIMARCEntry.filter((entry) => entry.entryID._text === "634").map((theme) => theme.text._text).join(" | ") : '';
-      const SAMIKeyword = SAMIMARCEntry.filter((entry) => entry.entryID._text === "650").length SAMIMARCEntry.filter((entry) => entry.entryID._text === "650").map((keyword) => keyword.text._text).join(" | ") : '';
-      const SAMIDocumentation = SAMIMARCEntry.filter((entry) => entry.entryID._text === "525").length SAMIMARCEntry.filter((entry) => entry.entryID._text === "525").map((documentation) => documentation.text._text).join(" | ") : '';
-      const SAMISubject = SAMIMARCEntry.filter((entry) => entry.entryID._text === "660").length SAMIMARCEntry.filter((entry) => entry.entryID._text === "660").map((subject) => subject.text._text).join(" | ") : '';
-      const SAMIAccess = SAMIMARCEntry.filter((entry) => entry.entryID._text === "856").length SAMIMARCEntry.filter((entry) => entry.entryID._text === "856").map((access) => access.text._text).join(" | ") : '';
-      const SAMILocOriginals = SAMIMARCEntry.filter((entry) => entry.entryID._text === "093").length SAMIMARCEntry.filter((entry) => entry.entryID._text === "093").map((locOriginal) => locOriginal.text._text).join(" | ") : '';
+      const SAMILocation = SAMIMARCEntry.filter((entry) => entry.entryID._text === "551").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "551").map((location) => location.text._text).join(" | ") : '';
+      const SAMILanguage = SAMIMARCEntry.filter((entry) => entry.entryID._text === "041").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "041").map((language) => language.text._text).join(" | ") : '';
+      const SAMIGenre = SAMIMARCEntry.filter((entry) => entry.entryID._text === "633").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "633").map((genre) => genre.text._text).join(" | ") : '';
+      const SAMIWebTheme = SAMIMARCEntry.filter((entry) => entry.entryID._text === "634").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "634").map((theme) => theme.text._text).join(" | ") : '';
+      const SAMIKeyword = SAMIMARCEntry.filter((entry) => entry.entryID._text === "650").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "650").map((keyword) => keyword.text._text).join(" | ") : '';
+      const SAMIDocumentation = SAMIMARCEntry.filter((entry) => entry.entryID._text === "525").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "525").map((documentation) => documentation.text._text).join(" | ") : '';
+      const SAMISubject = SAMIMARCEntry.filter((entry) => entry.entryID._text === "660").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "660").map((subject) => subject.text._text).join(" | ") : '';
+      const SAMIAccess = SAMIMARCEntry.filter((entry) => entry.entryID._text === "856").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "856").map((access) => access.text._text).join(" | ") : '';
+      const SAMILocOriginals = SAMIMARCEntry.filter((entry) => entry.entryID._text === "093").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "093").map((locOriginal) => locOriginal.text._text).join(" | ") : '';
       return {
         SAMIDescription,
         SAMIContributor,
