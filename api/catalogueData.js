@@ -15,7 +15,7 @@ module.exports = async (req, res) => {
   const productDataXML = await SAMIProductResponse.text();
   const productDataJSON = convert.xml2js(productDataXML, {compact: true, spaces: 2,});
   const productMARCEntry = productDataJSON.LookupTitleInfoResponse.TitleInfo.BibliographicInfo.MarcEntryInfo;
-  const originalFormat = productMARCEntry.filter((entry) => entry.entryID._text === "564")[0].text._text;
+  const originalFormat = productMARCEntry.filter((entry) => entry.entryID._text === "564")[0].text._text || 'N/A';
   const SAMIProduct = {originalFormat};
   const recordingsIDs = req.query.ids.split(',');
   console.log(recordingsIDs);
