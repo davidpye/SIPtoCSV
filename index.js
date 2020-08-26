@@ -7,8 +7,6 @@ let identifierPrefix = "";
 let institutionName = "";
 let digitalFilesPath = "";
 
-//Create Logging System for Shelfmarks Searched and the Times Searches are made
-
 function dedupeArray(array) {
   return [...new Set(array)]
 }
