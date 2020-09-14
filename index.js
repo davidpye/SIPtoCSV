@@ -45,7 +45,7 @@ function parseInputs() {
 }
 
 async function fetchAll(shelfmarks) {
-  const fetchArray = await Promise.allSettled(shelfmarks.map((element) => fetchSingle(element + ",").catch(err => alert(err))));
+  const fetchArray = await Promise.allSettled(shelfmarks.map((element) => fetchSingle(element + ",")));
   console.log('fetchArray = ', fetchArray);
   const fulfilledArray = fetchArray.filter((item) => item.status === "fulfilled");
   const rejectedArray = fetchArray.filter((item) => item.status === "rejected");
