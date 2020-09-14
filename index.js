@@ -72,7 +72,7 @@ async function fetchAll(shelfmarks) {
   const csvValues = fetchArrayValues.map(function (data) {return Object.values(data).join(", ");}); //CSV Row
   const csvOutput = [csvKeys, ...csvValues].join("\n");
   if (rejectedArray.length !== 0) {
-    console.log(fetchArray);
+    console.log(fetchArray);  
     handleCompleted();
     alert(`WARNING: ` + rejectedArray.length + (rejectedArray.length > 1 ? ` shelfmarks` : ` shelfmark`) + ` produced errors and` + (rejectedArray.length > 1 ? ` weren't` : ` wasn't`) + ` accessible.`);
   }
@@ -88,6 +88,7 @@ async function fetchAll(shelfmarks) {
 async function fetchSingle(shelfmark) {
   const summaryResponse = await fetch(`https://avsip.ad.bl.uk/api/SearchSIPs/null/false/false/` + shelfmark); //Search for Shelfmark to acquire relevant SIP ID No.
   const summaryjson = await summaryResponse.json();
+  console.log(summaryjson);
   const SIPID = summaryjson[0].Id;
   const SIPResponse = await fetch(`https://avsip.ad.bl.uk/api/SIP/` + SIPID); //Pull SIP JSON Data & Parse unformatted JSON
   const SIPjson = await SIPResponse.json();
