@@ -46,13 +46,13 @@ function parseInputs() {
 
 async function fetchAll(shelfmarks) {
   const fetchArray = await Promise.allSettled(shelfmarks.map((element) => fetchSingle(element + ",").catch(err => console.error(err))));
+  console.log('fetchArray = ', fetchArray);
   const fulfilledArray = fetchArray.filter((item) => item.status === "fulfilled");
   const rejectedArray = fetchArray.filter((item) => item.status === "rejected");
   console.log(`Fulfilled: ` + fulfilledArray.length);
   console.log(`Rejected: ` + rejectedArray.length);
-  console.log(rejectedArray);
   const errors = rejectedArray.map(x => x.reason);
-  console.log(errors);
+  console.log('errors = ', errors);
   let logData = {
     shelfmarks: shelfmarks,
     parentSlug: parentSlug, 
