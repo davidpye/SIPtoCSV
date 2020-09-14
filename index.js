@@ -51,7 +51,7 @@ async function fetchAll(shelfmarks) {
   const rejectedArray = fetchArray.filter((item) => item.status === "rejected");
   console.log(`Fulfilled: ` + fulfilledArray.length);
   console.log(`Rejected: ` + rejectedArray.length);
-  const errors = rejectedArray.map(x => x);
+  const errors = rejectedArray.map(x => x.reason);
   console.log('errors = ', errors);
   let logData = {
     shelfmarks: shelfmarks,
