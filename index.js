@@ -46,13 +46,12 @@ function parseInputs() {
 
 async function fetchAll(shelfmarks) {
   const fetchArray = await Promise.allSettled(shelfmarks.map((element) => fetchSingle(element + ",")));
-  console.log('fetchArray = ', fetchArray);
   const fulfilledArray = fetchArray.filter((item) => item.status === "fulfilled");
   const rejectedArray = fetchArray.filter((item) => item.status === "rejected");
   console.log(`Fulfilled: ` + fulfilledArray.length);
   console.log(`Rejected: ` + rejectedArray.length);
   const errors = rejectedArray.map(x => x.reason);
-  console.log('errors = ', errors);
+  console.log('errors: ', errors);
   let logData = {
     shelfmarks: shelfmarks,
     parentSlug: parentSlug, 
@@ -88,27 +87,26 @@ async function fetchAll(shelfmarks) {
 async function fetchSingle(shelfmark) {
   const summaryResponse = await fetch(`https://avsip.ad.bl.uk/api/SearchSIPs/null/false/false/` + shelfmark); //Search for Shelfmark to acquire relevant SIP ID No.
   const summaryjson = await summaryResponse.json();
-  console.log(summaryjson);
   const SIPID = summaryjson[0].Id;
   const SIPResponse = await fetch(`https://avsip.ad.bl.uk/api/SIP/` + SIPID); //Pull SIP JSON Data & Parse unformatted JSON
   const SIPjson = await SIPResponse.json();
   const ProcessMD = JSON.parse(SIPjson.ProcessMetadata);
-  // const PhysicalMD = JSON.parse(SIPjson.PhysicalStructure);
   const LogicalMD = JSON.parse(SIPjson.LogicalStructure);
   const productID = SIPjson.SamiTitleId;
   const recordingsIDs = SIPjson.Recordings.map((recording) => recording.SamiId);
   const catalogueDataResponse = await fetch(`/api/catalogueData?ids=${recordingsIDs.join(`,`)}&productID=${productID}`);
   const catalogueDataJSON = await catalogueDataResponse.json();
-  const {SAMIProduct, catalogueData}=catalogueDataJSON;
-  const recordingDate = dedupeArray(catalogueData.map((recording) => recording.SAMIRecDate)).join(`\n`);
-  const locations = dedupeArray(catalogueData.map((recording) => recording.SAMILocation)).join(`\n`);
-  const languages = dedupeArray(catalogueData.map((recording) => recording.SAMILanguage)).join(`, `);
-  const genres = dedupeArray(catalogueData.map((recording) => recording.SAMIGenre)).join(`\n`);
-  const themes = dedupeArray(catalogueData.map((recording) => recording.SAMIWebTheme)).join(``);
-  const keywords = dedupeArray(catalogueData.map((recording) => recording.SAMIKeyword)).join(``);
-  const documentation = dedupeArray(catalogueData.map((recording) => recording.SAMIDocumentation)).join(`\n`);
-  const subjects = dedupeArray(catalogueData.map((recording) => recording.SAMISubject)).join(``);
-  const locOriginals = dedupeArray(catalogueData.map((recording) => recording.SAMILocOriginals)).join(`\n`);
+  const {SAMIProduct, SAMIRecording}=catalogueDataJSON;
+  console.log (SAMIProduct, SAMIRecording);
+  const recordingDate = dedupeArray(SAMIRecording.map((recording) => recording.SAMIRecDate)).join(`\n`);
+  const locations = dedupeArray(SAMIRecording.map((recording) => recording.SAMILocation)).join(`\n`);
+  const languages = dedupeArray(SAMIRecording.map((recording) => recording.SAMILanguage)).join(`, `);
+  const genres = dedupeArray(SAMIRecording.map((recording) => recording.SAMIGenre)).join(`\n`);
+  const themes = dedupeArray(SAMIRecording.map((recording) => recording.SAMIWebTheme)).join(``);
+  const keywords = dedupeArray(SAMIRecording.map((recording) => recording.SAMIKeyword)).join(``);
+  const documentation = dedupeArray(SAMIRecording.map((recording) => recording.SAMIDocumentation)).join(`\n`);
+  const subjects = dedupeArray(SAMIRecording.map((recording) => recording.SAMISubject)).join(``);
+  const locOriginals = dedupeArray(SAMIRecording.map((recording) => recording.SAMILocOriginals)).join(`\n`);
   const recordingsData = LogicalMD[0].children.map(function (parent) {
     let parentRecordingName = parent.text;
     let childRecordingNames = parent.childRecordings.map(function (child) {
@@ -132,9 +130,9 @@ async function fetchSingle(shelfmark) {
     let allFileInfo = [parentFilesArray, ...childFilesArray];
     let combinedRecordingsData = allRecordingNames.map((name, i) => {
       return name + "\n" + 
-        (catalogueData[i].SAMIDescription !== undefined ? `Description: ` + catalogueData[i].SAMIDescription.replace(/"/g, ``) :``) +
-        (catalogueData[i].SAMILocation !== undefined ? `Recording Location: ` + catalogueData[i].SAMILocation + `\n` : ``) +
-        (catalogueData[i].SAMIContributor !== undefined ? `Contributors: ` + catalogueData[i].SAMIContributor + `\n` : ``) +
+        (SAMIRecording[i].SAMIDescription !== undefined ? `Description: ` + SAMIRecording[i].SAMIDescription.replace(/"/g, ``) :``) +
+        (SAMIRecording[i].SAMILocation !== undefined ? `Recording Location: ` + SAMIRecording[i].SAMILocation + `\n` : ``) +
+        (SAMIRecording[i].SAMIContributor !== undefined ? `Contributors: ` + SAMIRecording[i].SAMIContributor + `\n` : ``) +
         allFileInfo[i];
     }).join(`\n\n`);
     return combinedRecordingsData;

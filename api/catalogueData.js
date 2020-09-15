@@ -16,10 +16,18 @@ module.exports = async (req, res) => {
   const productDataJSON = convert.xml2js(productDataXML, {compact: true, spaces: 2,});
   const productMARCEntry = productDataJSON.LookupTitleInfoResponse.TitleInfo.BibliographicInfo.MarcEntryInfo;
   const originalFormat = productMARCEntry.filter((entry) => entry.entryID._text === "564").length ? productMARCEntry.filter((entry) => entry.entryID._text === "564")[0].text._text : 'N/A';
-  const SAMIProduct = {originalFormat};
+
+  const collectionTitle = productMARCEntry.filter((entry) => entry.entryID._text === "490").length ? productMARCEntry.filter((entry) => entry.entryID._text === "490")[0].text._text : '';
+  const productNote = productMARCEntry.filter((entry) => entry.entryID._text === "502").length ? productMARCEntry.filter((entry) => entry.entryID._text === "502")[0].text._text : '';
+  const SAMIProduct = {
+    originalFormat, 
+    collectionTitle, 
+    productNote
+  };
+  
   const recordingsIDs = req.query.ids.split(',');
   console.log(recordingsIDs);
-  const catalogueData = await Promise.all(recordingsIDs.map(async (ID) => {
+  const SAMIRecording = await Promise.all(recordingsIDs.map(async (ID) => {
       const SAMIResponse = await fetch(SAMISearchPath + ID + SAMISearchRecording);
       const SAMIResponseXML = await SAMIResponse.text();
       const SAMIJSON = convert.xml2js(SAMIResponseXML, {compact: true, spaces: 2,});
@@ -36,6 +44,14 @@ module.exports = async (req, res) => {
       const SAMISubject = SAMIMARCEntry.filter((entry) => entry.entryID._text === "660").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "660").map((subject) => subject.text._text).join(" | ") : '';
       const SAMIAccess = SAMIMARCEntry.filter((entry) => entry.entryID._text === "856").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "856").map((access) => access.text._text).join(" | ") : '';
       const SAMILocOriginals = SAMIMARCEntry.filter((entry) => entry.entryID._text === "093").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "093").map((locOriginal) => locOriginal.text._text).join(" | ") : '';
+
+      const SAMIPerformanceNote = SAMIMARCEntry.filter((entry) => entry.entryID._text === "508").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "508").map((performanceNote) => performanceNote.text._text).join(" | ") : '';
+      const SAMIRecordingNote = SAMIMARCEntry.filter((entry) => entry.entryID._text === "509").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "509").map((recordingNote) => recordingNote.text._text).join(" | ") : '';
+      const SAMIPlaybackMode = SAMIMARCEntry.filter((entry) => entry.entryID._text === "315").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "315").map((playbackMode) => playbackMode.text._text).join(" | ") : '';
+      const SAMIBroadcastInfo = SAMIMARCEntry.filter((entry) => entry.entryID._text === "470").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "470").map((broadcastInfo) => broadcastInfo.text._text).join(" | ") : '';
+      const SAMIBroadcastTitle = SAMIMARCEntry.filter((entry) => entry.entryID._text === "474").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "474").map((broadcastTitle) => broadcastTitle.text._text).join(" | ") : '';
+      const SAMISummary = SAMIMARCEntry.filter((entry) => entry.entryID._text === "561").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "561").map((summary) => summary.text._text).join(" | ") : '';
+
       return {
         SAMIDescription,
         SAMIContributor,
@@ -49,11 +65,17 @@ module.exports = async (req, res) => {
         SAMISubject,
         SAMIAccess,
         SAMILocOriginals,
+        SAMIPerformanceNote,
+        SAMIRecordingNote,
+        SAMIPlaybackMode,
+        SAMIBroadcastInfo,
+        SAMIBroadcastTitle,
+        SAMISummary
       };
     })
   );
   res.json({
     SAMIProduct,
-    catalogueData
+    SAMIRecording
   });
 };
