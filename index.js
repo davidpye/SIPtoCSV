@@ -224,6 +224,7 @@ async function fetchSingle(shelfmark) {
     let filePath = digitalFilesPath + fileName;
     return filePath;
   }).join(`\n`);
+
   const csvData = {
     legacyId: "",
     parentId: "",
