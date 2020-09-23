@@ -12,12 +12,13 @@
   "dependencies": {
     "isomorphic-fetch": "^2.2.1",
     "mongodb": "^3.5.9",
-    "parcel-bundler": "^1.12.4",
     "url": "^0.11.0",
-    "vercel": "^19.2.0",
     "xml-js": "^1.6.11"
   },
   "browserslist": [
     "last 1 Chrome versions"
-  ]
+  ],
+  "devDependencies": {
+    "parcel-bundler": "^1.12.4"
+  }
 }
