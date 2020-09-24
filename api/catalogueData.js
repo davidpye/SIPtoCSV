@@ -20,8 +20,8 @@ module.exports = async (req, res) => {
   const collectionTitle = productMARCEntry.filter((entry) => entry.entryID._text === "490").length ? productMARCEntry.filter((entry) => entry.entryID._text === "490")[0].text._text : '';
   const productNote = productMARCEntry.filter((entry) => entry.entryID._text === "502").length ? productMARCEntry.filter((entry) => entry.entryID._text === "502")[0].text._text : '';
   const SAMIProduct = {
-    originalFormat, 
-    collectionTitle, 
+    originalFormat,
+    collectionTitle,
     productNote
   };
   
