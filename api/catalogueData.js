@@ -44,14 +44,13 @@ module.exports = async (req, res) => {
       const SAMISubject = SAMIMARCEntry.filter((entry) => entry.entryID._text === "660").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "660").map((subject) => subject.text._text).join(" | ") : '';
       const SAMIAccess = SAMIMARCEntry.filter((entry) => entry.entryID._text === "856").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "856").map((access) => access.text._text).join(" | ") : '';
       const SAMILocOriginals = SAMIMARCEntry.filter((entry) => entry.entryID._text === "093").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "093").map((locOriginal) => locOriginal.text._text).join(" | ") : '';
-
       const SAMIPerformanceNote = SAMIMARCEntry.filter((entry) => entry.entryID._text === "508").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "508").map((performanceNote) => performanceNote.text._text).join(" | ") : '';
       const SAMIRecordingNote = SAMIMARCEntry.filter((entry) => entry.entryID._text === "509").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "509").map((recordingNote) => recordingNote.text._text).join(" | ") : '';
       const SAMIPlaybackMode = SAMIMARCEntry.filter((entry) => entry.entryID._text === "315").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "315").map((playbackMode) => playbackMode.text._text).join(" | ") : '';
       const SAMIBroadcastInfo = SAMIMARCEntry.filter((entry) => entry.entryID._text === "470").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "470").map((broadcastInfo) => broadcastInfo.text._text).join(" | ") : '';
       const SAMIBroadcastTitle = SAMIMARCEntry.filter((entry) => entry.entryID._text === "474").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "474").map((broadcastTitle) => broadcastTitle.text._text).join(" | ") : '';
       const SAMISummary = SAMIMARCEntry.filter((entry) => entry.entryID._text === "561").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "561").map((summary) => summary.text._text).join(" | ") : '';
-
+      const SAMITitle = SAMIMARCEntry.filter((entry) => entry.entryID._text === "246").length ? SAMIMARCEntry.filter((entry) => entry.entryID._text === "246").map((title) => title.text._text).join(" | ") : '';
       return {
         SAMIDescription,
         SAMIContributor,
@@ -65,13 +64,13 @@ module.exports = async (req, res) => {
         SAMISubject,
         SAMIAccess,
         SAMILocOriginals,
-        
         SAMIPerformanceNote,
         SAMIRecordingNote,
         SAMIPlaybackMode,
         SAMIBroadcastInfo,
         SAMIBroadcastTitle,
-        SAMISummary
+        SAMISummary,
+        SAMITitle
       };
     })
   );

@@ -97,7 +97,8 @@ async function fetchSingle(shelfmark) {
   const catalogueDataResponse = await fetch(`/api/catalogueData?ids=${recordingsIDs.join(`,`)}&productID=${productID}`);
   const catalogueDataJSON = await catalogueDataResponse.json();
   const {SAMIProduct, SAMIRecording}=catalogueDataJSON;
-  console.log (SAMIProduct, SAMIRecording);
+  const collectionTitle = (SAMIProduct.collectionTitle !== `` ? `Collection: ` + SAMIProduct.collectionTitle + `\n` : ``) ;
+  const productNote = (SAMIProduct.productNote !== `` ? `Product Note: ` + SAMIProduct.productNote + `\n` : ``) ;
   const recordingDate = dedupeArray(SAMIRecording.map((recording) => recording.SAMIRecDate)).join(`\n`);
   const locations = dedupeArray(SAMIRecording.map((recording) => recording.SAMILocation)).join(`\n`);
   const languages = dedupeArray(SAMIRecording.map((recording) => recording.SAMILanguage)).join(`, `);
@@ -106,6 +107,7 @@ async function fetchSingle(shelfmark) {
   const keywords = dedupeArray(SAMIRecording.map((recording) => recording.SAMIKeyword)).join(``);
   const documentation = dedupeArray(SAMIRecording.map((recording) => recording.SAMIDocumentation)).join(`\n`);
   const subjects = dedupeArray(SAMIRecording.map((recording) => recording.SAMISubject)).join(``);
+  const originalPBMode = dedupeArray(SAMIRecording.map((recording) => recording.SAMIPlaybackMode)).join(`, `);
   const locOriginals = dedupeArray(SAMIRecording.map((recording) => recording.SAMILocOriginals)).join(`\n`);
   const recordingsData = LogicalMD[0].children.map(function (parent) {
     let parentRecordingName = parent.text;
@@ -225,6 +227,14 @@ async function fetchSingle(shelfmark) {
     return filePath;
   }).join(`\n`);
 
+  const recordingNotes = SAMIRecording.map((recording, i) => {
+    let recordingName = (SAMIRecording[i].SAMITitle !== `` ? `Recording Name: ` + SAMIRecording[i].SAMITitle : ``) ;
+    let recordingNote = (SAMIRecording[i].SAMIRecordingNote !== `` ? `\nRecording Note: ` + SAMIRecording[i].SAMIRecordingNote : ``) ;
+    let performanceNote = (SAMIRecording[i].SAMIPerformanceNote !== `` ? `\nPerformance Note: ` + SAMIRecording[i].SAMIPerformanceNote : ``) ;
+    let summary = (SAMIRecording[i].SAMISummary !== `` ? `\nRecording Summary: ` + SAMIRecording[i].SAMISummary : ``) ;
+    return recordingName + recordingNote + performanceNote + summary;
+  });
+
   const csvData = {
     legacyId: "",
     parentId: "",
@@ -233,11 +243,11 @@ async function fetchSingle(shelfmark) {
     accessionNumber: "",
     title: '"' + SIPjson.SamiCallNumber + `: ` + SIPjson.SamiTitle.toString().replace(/,/g, ` `) + '"',
     levelOfDescription: "Product",
-    extentAndMedium: '"' + `Original(s): ` + SAMIProduct.originalFormat + `\nSurrogate(s): ` + LogicalMD[0].children[0].files.length + ` Wave format Audio File` + (LogicalMD[0].children[0].files.length > 1 ? `s` : ``) + '"',
+    extentAndMedium: '"' + `Original(s): ` + SAMIProduct.originalFormat + `\nSurrogate(s): ` + LogicalMD[0].children[0].files.length + ` Wave format Audio File` + (LogicalMD[0].children[0].files.length > 1 ? `s` : ``) + `\nOriginal Playback Mode: ` + originalPBMode + '"',
     repository: institutionName,
     archivalHistory: "",
     acquisition: "",
-    scopeAndContent: '"' + recordingsData + '"',
+    scopeAndContent: '"' + collectionTitle + recordingsData + '"',
     appraisal: "",
     accruals: "",
     arrangement: "",
@@ -251,9 +261,9 @@ async function fetchSingle(shelfmark) {
     locationOfOriginals: '"' + locOriginals + '"',
     locationOfCopies: "The British Library",
     relatedUnitsOfDescription: "",
-    publicationNote: "",
+    publicationNote: '"' + productNote + '"',
     digitalObjectURI: '"' + createdFilePaths + '"',
-    generalNote: "",
+    generalNote: '"' + recordingNotes + '"',
     subjectAccessPoints: '"' + (subjects !== `` && subjects !== ` ` ? subjects : ``) + (keywords !==`` && keywords !==` ` ? ` | ` : ``) + (keywords !==`` && keywords !==` ` ? keywords : ``) + (themes !==`` && themes !==` ` ? ` | ` : ``) + (themes !==`` && themes !== ` ` ? themes : ``) + '"',
     placeAccessPoints: '"' + locations + '"',
     nameAccessPoints: "",
