@@ -233,7 +233,9 @@ async function fetchSingle(shelfmark) {
     let performanceNote = (SAMIRecording[i].SAMIPerformanceNote !== `` ? `\nPerformance Note: ` + SAMIRecording[i].SAMIPerformanceNote : ``) ;
     let summary = (SAMIRecording[i].SAMISummary !== `` ? `\nRecording Summary: ` + SAMIRecording[i].SAMISummary : ``) ;
     return recordingName + recordingNote + performanceNote + summary;
-  });
+  }).join(`\n\n`);
+
+  console.log(recordingNotes);
 
   const csvData = {
     legacyId: "",
