@@ -57,7 +57,7 @@ async function fetchAll(shelfmarks) {
   const rejectedArray = fetchArray.filter((item) => item.status === "rejected");
   console.log(`Fulfilled: ` + fulfilledArray.length);
   console.log(`Rejected: ` + rejectedArray.length);
-  const errors = rejectedArray.map(x => ({'Call Number: ': x.reason.callNumber.replace(`!2F`, `/`), 'Message: ': x.reason.message}));
+  const errors = rejectedArray.map(x => ({'Call Number ': x.reason.callNumber.replace(`!2F`, `/`), 'Message ': x.reason.message}));
   const rejectedCallsList = rejectedArray.map(x => (x.reason.callNumber.replace(`!2F`, `/`))).join('\n');
   console.log('errors: ', errors);
   let logData = {
