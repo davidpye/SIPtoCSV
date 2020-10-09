@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
   };
   
   const recordingsIDs = req.query.ids.split(',');
-  console.log(recordingsIDs);
+  //console.log(recordingsIDs);
   const SAMIRecording = await Promise.all(recordingsIDs.map(async (ID) => {
       const SAMIResponse = await fetch(SAMISearchPath + ID + SAMISearchRecording);
       const SAMIResponseXML = await SAMIResponse.text();

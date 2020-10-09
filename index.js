@@ -75,8 +75,8 @@ async function fetchAll(shelfmarks) {
     return;
   }
   const fetchArrayValues = fulfilledArray.map((x) => x.value);
-  const csvKeys = Object.keys(fetchArrayValues[0]).join(", "); //CSV Header
-  const csvValues = fetchArrayValues.map(function (data) {return Object.values(data).join(", ");}); //CSV Row
+  const csvKeys = Object.keys(fetchArrayValues[0]).join(","); //CSV Header
+  const csvValues = fetchArrayValues.map(function (data) {return Object.values(data).join(",");}); //CSV Row
   const csvOutput = [csvKeys, ...csvValues].join("\n");
   if (rejectedArray.length !== 0) {
     handleCompleted();
@@ -241,8 +241,6 @@ async function fetchSingle(shelfmark) {
     let summary = (SAMIRecording[i].SAMISummary !== `` ? `\nRecording Summary: ` + SAMIRecording[i].SAMISummary : ``) ;
     return recordingName + recordingNote + performanceNote + summary;
   }).join(`\n\n`);
-
-  console.log(recordingNotes);
 
   const csvData = {
     legacyId: "",
