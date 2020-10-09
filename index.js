@@ -7,6 +7,13 @@ let identifierPrefix = "";
 let institutionName = "";
 let digitalFilesPath = "";
 
+class CustomError extends Error {
+  constructor(callNumber, ...params){
+    super(...params);
+    this.callNumber = callNumber;
+  }
+}
+
 function dedupeArray(array) {
   return [...new Set(array)]
 }
@@ -45,12 +52,13 @@ function parseInputs() {
 }
 
 async function fetchAll(shelfmarks) {
-  const fetchArray = await Promise.allSettled(shelfmarks.map((element) => fetchSingle(element + ",")));
+  const fetchArray = await Promise.allSettled(shelfmarks.map((element) => fetchSingle(element + ",").catch(err => {throw new CustomError(element, err)})));
   const fulfilledArray = fetchArray.filter((item) => item.status === "fulfilled");
   const rejectedArray = fetchArray.filter((item) => item.status === "rejected");
   console.log(`Fulfilled: ` + fulfilledArray.length);
   console.log(`Rejected: ` + rejectedArray.length);
-  const errors = rejectedArray.map(x => x.reason);
+  const errors = rejectedArray.map(x => ({'Call Number: ': x.reason.callNumber.replace(`!2F`, `/`), 'Message: ': x.reason.message}));
+  const rejectedCallsList = rejectedArray.map(x => (x.reason.callNumber.replace(`!2F`, `/`))).join('\n');
   console.log('errors: ', errors);
   let logData = {
     shelfmarks: shelfmarks,
@@ -63,7 +71,7 @@ async function fetchAll(shelfmarks) {
   addLog(logData);
   if (fulfilledArray.length === 0) {
     handleCompleted();
-    alert(`WARNING: ` + rejectedArray.length + (rejectedArray.length > 1 ? ` call numbers` : ` call number`) + ` produced errors and` + (rejectedArray.length > 1 ? ` weren't` : ` wasn't`) + ` accessible. \n Please check your connection to the SIP Tool.`);
+    alert(`WARNING: ` + rejectedArray.length + (rejectedArray.length > 1 ? ` call numbers` : ` call number`) + ` produced errors and` + (rejectedArray.length > 1 ? ` weren't` : ` wasn't`) + ` accessible. \nPlease check your connection to the SIP Tool.` + `\nFailed Call Numbers:\n` + rejectedCallsList);
     return;
   }
   const fetchArrayValues = fulfilledArray.map((x) => x.value);
@@ -71,9 +79,8 @@ async function fetchAll(shelfmarks) {
   const csvValues = fetchArrayValues.map(function (data) {return Object.values(data).join(", ");}); //CSV Row
   const csvOutput = [csvKeys, ...csvValues].join("\n");
   if (rejectedArray.length !== 0) {
-    console.log(fetchArray);  
     handleCompleted();
-    alert(`WARNING: ` + rejectedArray.length + (rejectedArray.length > 1 ? ` call numbers` : ` call number`) + ` produced errors and` + (rejectedArray.length > 1 ? ` weren't` : ` wasn't`) + ` accessible.`);
+    alert(`WARNING: ` + rejectedArray.length + (rejectedArray.length > 1 ? ` call numbers` : ` call number`) + ` produced errors and` + (rejectedArray.length > 1 ? ` weren't` : ` wasn't`) + ` accessible.` + `\nFailed Call Numbers:\n` + rejectedCallsList);
   }
   const element = document.createElement("a"); // Create CSV File from data and download
   const file = new Blob([csvOutput], { type: "text/plain" });
